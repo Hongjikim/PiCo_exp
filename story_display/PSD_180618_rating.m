@@ -45,15 +45,13 @@ end
 Filename = {'sample_1.txt', 'sample_2.txt'} ;
 % Filename(2) = 'sample_2.txt';
 % Filename = input('***** Write the exact file name(Ex. pico_story.txt):', 's');
-data.text_file_name{1} = Filename{1};
-data.text_file_name{2} = Filename{2};
+
 
 % SETUP: global
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
 global fontsize window_rect % lb tb recsize barsize rec; % rating scale
-global letter_time period_time comma_time base_time
-
+global letter_time period_time comma_time base_time window_ratio
 % display time
 letter_time =  0.15*4;   %0.15*4
 period_time = 3;
@@ -62,6 +60,19 @@ base_time = 0;
 
 % Screen setting
 bgcolor = 100;
+
+for s_num = 1:2
+    [duration, doubleText, my_length, space_loc, comma_loc, ending_loc, time_interval, data] ...
+        = text_duration(Filename, s_num, data);
+end
+data.text_file_name{1} = Filename{1};
+data.text_file_name{2} = Filename{2};
+
+ready = input(['Check the time. Ready to start with full screen? \n', ...
+    '\n1: Yes, continue  ,   2: No,  I`ll break.\n:  ']);
+if ready == 2
+    error('Breaked.')
+end
 
 screens = Screen('Screens');
 window_num = screens(end);
@@ -92,59 +103,74 @@ Screen('TextSize', theWindow, text_size);
 % HideCursor;
 
 % TEXT file - check if it's formatted
+%
 
 % load Text file
 for s_num = 1:2
     [duration, doubleText, my_length, space_loc, comma_loc, ending_loc, time_interval, data] ...
         = text_duration(Filename, s_num, data);
+    [ts, isi_iti] = fast_fmri_generate_ts;
+    fast_fmri_task_main(ts, isi_iti, i);
+    
     data.total_time{s_num} = sum(duration(:,2));
     
     
-    % WAITING FOR INPUT FROM THE SCANNER
-    while (1)
-        [~,~,keyCode] = KbCheck;
-        
-        if keyCode(KbName('s'))==1
-            break
-        elseif keyCode(KbName('q'))==1
-            abort_experiment('manual');
+    if s_num == 1
+        % WAITING FOR INPUT FROM THE SCANNER
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('s'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
+            DrawFormattedText(theWindow, ready_prompt,'center', textH, white);
+            Screen('Flip', theWindow);
+            
         end
+        
+        % FOR DISDAQ 10 SECONDS
+        
+        % gap between 's' key push and the first stimuli (disdaqs: data.disdaq_sec)
+        % 4 seconds: "시작합니다..."
+        data.runscan_starttime = GetSecs; % run start timestamp
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
-        ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-        DrawFormattedText(theWindow, ready_prompt,'center', textH, white);
+        DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white, [], [], [], 1.2);
+        Screen('Flip', theWindow);
+        sTime_3 = GetSecs;
+        while GetSecs - sTime_3 < 4 % wait 4 seconds for disdaq
+        end
+        % Blank
+        Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('Flip', theWindow);
         
+        % Start display
+        start_msg = double('첫 번째 이야기를 시작하겠습니다. \n\n 화면의 중앙에 단어가 나타날 예정이니 화면에 집중해주세요. \n\n 글의 내용에 최대한 몰입해주세요. ') ;
+        DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
+        Screen('Flip', theWindow);
+        sTime_2 = GetSecs;
+        while GetSecs - sTime_2 < 5 % when the story is starting, wait for 5 seconds.
+        end
+        
+        
+    else
+        % Start display
+        start_msg = double('두 번째 이야기를 시작하겠습니다. \n\n 화면의 중앙에 단어가 나타날 예정이니 화면에 집중해주세요. \n\n 글의 내용에 최대한 몰입해주세요. ') ;
+        DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
+        Screen('Flip', theWindow);
+        sTime_2 = GetSecs;
+        while GetSecs - sTime_2 < 5 % when the story is starting, wait for 5 seconds.
+        end
     end
     
-    % FOR DISDAQ 10 SECONDS
-    
-    % gap between 's' key push and the first stimuli (disdaqs: data.disdaq_sec)
-    % 4 seconds: "시작합니다..."
-    data.runscan_starttime = GetSecs; % run start timestamp
-    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white, [], [], [], 1.2);
-    Screen('Flip', theWindow);
-    sTime_3 = GetSecs;
-    while GetSecs - sTime_3 < 4 % wait 4 seconds for disdaq
-    end
-    % Blank
-    Screen(theWindow,'FillRect',bgcolor, window_rect);
-    Screen('Flip', theWindow);
-    
-    % Start display
-    start_msg = double('시작하겠습니다. \n\n 화면의 중앙에 단어가 나타날 예정이니 화면에 집중해주세요. \n\n 글의 내용에 최대한 몰입해주세요. ') ;
-    DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
-    Screen('Flip', theWindow);
-    
-    sTime_2 = GetSecs;
-    while GetSecs - sTime_2 < 5 % when the story is starting, wait for 5 seconds.
-    end
-    
-    data.loop_start_time_stamp{s_num} = GetSecs;
+    data.loop_start_time{s_num} = GetSecs;
     
     for i = 1:my_length
         sTime = GetSecs;
-        data.dat{s_num}{i}.text_start_time_stamp = sTime;
+        data.dat{s_num}{i}.text_start_time = sTime;
         msg = doubleText(space_loc(i)+1:space_loc(i+1));
         data.dat{s_num}{i}.msg = char(msg);
         data.dat{s_num}{i}.duration = duration(i,2);
@@ -153,35 +179,59 @@ for s_num = 1:2
         Screen('Flip', theWindow);
         while GetSecs - sTime < letter_time + base_time + abs(time_interval(i)) %0.31 %duration(i,2)
         end
-        data.dat{s_num}{i}.text_end_time_stamp = GetSecs;
+        data.dat{s_num}{i}.text_end_time = GetSecs;
         if duration(i,1) > 1
             DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
             Screen('Flip', theWindow);
             while GetSecs - sTime < duration(i,2)
                 %duration(i,2) - (letter_time + base_time + abs(time_interval(i)))
             end
-            data.dat{s_num}{i}.blank_end_time_stamp = GetSecs;
+            data.dat{s_num}{i}.blank_end_time = GetSecs;
         end
-        data.dat{s_num}{i}.text_end_time_stamp = GetSecs;
+        data.dat{s_num}{i}.text_end_time = GetSecs;
         if rem(i,5) == 0
             save(data.datafile, 'data', '-append');
         end
     end
     
-    data.loop_end_time_stamp{s_num} = GetSecs;
+    data.loop_end_time{s_num} = GetSecs;
+    save(data.datafile, 'data', '-append');
+    while GetSecs - sTime < 5
+        % when the story is done, wait for 5 seconds. (in Blank)
+    end
     
+    
+    resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 바라보시며 \n 자유롭게 생각을 하시면 됩니다. \n 중간중간 과제가 나타날 예정입니다.') ;
+    DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color);
+    Screen('Flip', theWindow);
+    
+    sTime = GetSecs;
+    while GetSecs - sTime < 10
+        % when the story is done, wait for 5 seconds. (in Blank)
+    end
+    
+    fixation_point = double('+') ;
+    DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+    Screen('Flip', theWindow);
+    
+    sTime = GetSecs;
+    data.resting_start_time{s_num} = GetSecs;
+    while GetSecs - sTime < 10
+        % when the story is done, wait for 5 seconds. (in Blank)
+    end
+    data.resting_end_time{s_num} = GetSecs;
+    
+    end_msg = double('끝입니다.') ;
+    DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
+    Screen('Flip', theWindow);
+    
+    save(data.datafile, 'data', '-append');
 end
 
-
-while GetSecs - sTime < 5
-    % when the story is done, wait for 5 seconds. (in Blank)
-end
 data.endtime_getsecs = GetSecs;
 save(data.datafile, 'data', '-append');
 
-end_msg = double('끝입니다.') ;
-DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
-Screen('Flip', theWindow);
-
 KbStrokeWait;
 sca;
+
+

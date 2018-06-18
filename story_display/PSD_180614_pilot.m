@@ -149,8 +149,8 @@ for i = 1:my_length
     
 end
 
-fprintf('\n*************************\n\ntotal time: %.2f seconds \n', sum(duration(:,2)));
-fprintf('total words: %.f words \n\n*************************\n', my_length);
+fprintf('\n*************************\ntotal time: %.2f seconds \n', sum(duration(:,2)));
+fprintf('total words: %.f words \n*************************\n', my_length);
 
 data.total_time = sum(duration(:,2));
 

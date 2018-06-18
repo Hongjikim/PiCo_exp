@@ -4,9 +4,12 @@ function [duration, doubleText, my_length, space_loc, comma_loc, ending_loc, tim
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
 global fontsize window_rect lb tb recsize barsize rec; % rating scale
-global letter_time period_time comma_time base_time;
+global letter_time period_time comma_time base_time window_ratio;
 
-myFile = fopen(Filename,'r'); %fopen('pico_story_kor_ANSI.txt', 'r');
+
+% Filename_2 = Filename(s_num);
+
+myFile = fopen(Filename{s_num},'r'); %fopen('pico_story_kor_ANSI.txt', 'r');
 myText = fgetl(myFile);
 fclose(myFile);
 doubleText = double(myText);
@@ -26,29 +29,8 @@ time_interval = randn(1,my_length)*.4; % *0.1
 %mean(time_interval);
 
 
-for j = 1:length(comma_loc)
-    if sum(comma_loc(j) + 1 == space_loc) == 0
-        disp('*** error in contents! ***')
-        fprintf('쉼표 위치: %s \n', doubleText(comma_loc(j)-15:comma_loc(j)))
-        sca
-        break
-    end
-end
-
-for k = 1:length(ending_loc)
-    if sum(ending_loc(k) + 1 == space_loc) == 0
-        disp ('*** error in contents! ***')
-        fprintf('마침표 위치: %s', doubleText(ending_loc(k)-15:ending_loc(k)))
-        sca
-        break
-    end
-end
-
-
-duration = zeros(my_length,2);
-
 for i = 1:my_length
-    letter_num = space_loc(i+1) - space_loc(i);
+    % letter_num = space_loc(i+1) - space_loc(i);
     if sum(space_loc(i+1) - 1 == comma_loc) ~= 0
         duration(i,1) = 2; % comma
         duration(i,2) = letter_time + base_time + comma_time + abs(time_interval(i));
@@ -65,5 +47,6 @@ for i = 1:my_length
     
 end
 
-fprintf('\n*************************\n\ntotal time: %.2f seconds \n', sum(duration(:,2)));
-fprintf('total words: %.f words \n\n*************************\n', my_length);
+fprintf('\n*************************\ntext title: %s', Filename{s_num});
+fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
+fprintf('total words: %.f words \n*************************\n', my_length);
