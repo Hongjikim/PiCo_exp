@@ -49,3 +49,5 @@ end
 fprintf('\n*************************\ntext title: %s', Filename{s_num});
 fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
 fprintf('total words: %.f words \n*************************\n', my_length);
+
+end
