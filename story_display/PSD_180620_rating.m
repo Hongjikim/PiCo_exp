@@ -140,8 +140,7 @@ for s_num = 1:2
         DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white, [], [], [], 1.2);
         Screen('Flip', theWindow);
         sTime_3 = GetSecs;
-        while GetSecs - sTime_3 < 4 % wait 4 seconds for disdaq
-        end
+        while GetSecs - sTime_3 < 10, end % wait 10 seconds for disdaq
         % Blank
         Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('Flip', theWindow);
@@ -151,8 +150,7 @@ for s_num = 1:2
         DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
         Screen('Flip', theWindow);
         sTime_2 = GetSecs;
-        while GetSecs - sTime_2 < 5 % when the story is starting, wait for 5 seconds.
-        end
+        while GetSecs - sTime_2 < 5, end % when the story is starting, wait for 5 seconds.
         
     else
         % Start second display
