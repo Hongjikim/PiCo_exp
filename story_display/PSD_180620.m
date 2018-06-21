@@ -3,11 +3,9 @@
 % SETUP: time
 text_color = 255;
 text_size = 42; %38?
- %클수록 화면 작아짐.
 
 % data save
-% basedir = '/Users/hongji/Dropbox/MATLAB_hongji/github_hongji/Pico_v0/story_display/';
-basedir = 'C:\Users\Cocoanlab_WL01\Desktop\story_display'
+basedir = '/Users/hongji/Dropbox/PiCo_git/story_display';
 cd(basedir); addpath(genpath(basedir));
 
 subject_ID = input('Subject ID? (P001_KJH):', 's');
@@ -31,6 +29,7 @@ data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
 
 if exist(data.datafile, 'file')
+    fprintf('\n ** EXSITING FILE: %s %s **', data.subject, subjdate);
     cont_or_not = input(['\nYou type the run number that is inconsistent with the data previously saved.', ...
         '\nWill you go on with your run number that typed just before?', ...
         '\n1: Yes, continue with typed run number.  ,   2: No, it`s a mistake. I`ll break.\n:  ']);
@@ -43,9 +42,8 @@ else
     save(data.datafile, 'data');
 end
 
-Filename = {'sample_1.txt', 'sample_2.txt'} ;
-% Filename = {'story_7_YSE.txt', 'story_10_PKH.txt'} ;
-% Filename(2) = 'sample_2.txt';
+% Filename = {'story_10_PKH.txt', 'story_11_KJH.txt'} ;
+Filename = {'sample_1.txt', 'sample_2.txt'}; 
 % Filename = input('***** Write the exact file name(Ex. pico_story.txt):', 's');
 
 % SETUP: global
@@ -59,16 +57,16 @@ period_time = 3;
 comma_time = 1.5;
 base_time = 0;
 
-window_ratio = 1 ;
-
 % Screen setting
 bgcolor = 100;
+window_ratio = 1.4; 
 
 screens = Screen('Screens');
 window_num = screens(end);
 Screen('Preference', 'SkipSyncTests', 1);
 window_info = Screen('Resolution', window_num);
 window_rect = [0 0 window_info.width window_info.height]/window_ratio; %0 0 1920 1080
+
 
 W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
@@ -206,7 +204,7 @@ for s_num = 1:2
     Screen('Flip', theWindow);
     
     sTime = GetSecs;
-    while GetSecs - sTime < 15
+    while GetSecs - sTime < 10
         % when the story is done, wait for 5 seconds. (in Blank)
     end
     
@@ -216,7 +214,7 @@ for s_num = 1:2
     
     sTime = GetSecs;
     data.resting_start_time{s_num} = GetSecs;
-    while GetSecs - sTime < 120
+    while GetSecs - sTime < 10
         % when the story is done, wait for 5 seconds. (in Blank)
     end
     data.resting_end_time{s_num} = GetSecs;

@@ -4,10 +4,8 @@ function [duration, doubleText, my_length, space_loc, comma_loc, ending_loc, tim
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
 global fontsize window_rect lb tb recsize barsize rec; % rating scale
-global letter_time period_time comma_time base_time window_ratio;
+global letter_time period_time comma_time base_time %window_ratio;
 
-
-% Filename_2 = Filename(s_num);
 
 myFile = fopen(Filename{s_num},'r'); %fopen('pico_story_kor_ANSI.txt', 'r');
 myText = fgetl(myFile);
@@ -28,6 +26,7 @@ my_length = length(space_loc)-1;
 time_interval = randn(1,my_length)*.4; % *0.1
 %mean(time_interval);
 
+duration = zeros(my_length, 2);
 
 for i = 1:my_length
     % letter_num = space_loc(i+1) - space_loc(i);
