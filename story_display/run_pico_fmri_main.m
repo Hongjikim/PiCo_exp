@@ -6,6 +6,10 @@
 % words_data
 
 %%
+subject_dir = '/Users/hongji/Dropbox/PiCo_git/story_display/Text Files/P000_sample';
+% cd(basedir); addpath(genpath(basedir));
+
+
 ts = pico_fmri_generate_ts(subjecdir);
 
 % ts{1}: run1
