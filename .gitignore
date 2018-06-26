@@ -1,4 +1,4 @@
 .DS_Store
 *.m~
-data
-Text Files
+data/
+~/Text Files
