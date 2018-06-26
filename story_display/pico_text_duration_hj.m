@@ -1,9 +1,9 @@
-function out = pico_text_duration(fname)
+function [out, cal_duration, my_length] = pico_text_duration(fname)
 
 % out = pico_text_duration(fname)
 %
 % :Output:
-%   
+%
 %    out{i}.total_duration
 %    out{i}.word_type
 %    out{i}.word_duration
@@ -38,6 +38,8 @@ my_length = length(space_loc)-1;
 time_interval = randn(1,my_length)*.4; % *0.1
 %mean(time_interval);
 
+cal_duration = 0;
+
 for i = 1:my_length
     
     % letter_num = space_loc(i+1) - space_loc(i);
@@ -51,14 +53,14 @@ for i = 1:my_length
         out{i}.total_duration= letter_time + base_time + abs(time_interval(i));
         out{i}.word_type = 'words';
     end
-    
+    cal_duration = cal_duration + out{i}.total_duration;
     out{i}.word_duration = letter_time + base_time + abs(time_interval(i));
     msg = doubleText(space_loc(i)+1:space_loc(i+1));
     msg(msg==32) = []; % deblank
     out{i}.msg = char(msg);
     out{i}.msg_double = msg;
 end
- 
+
 % fprintf('\n*************************\ntext title: %s', Filename{s_num});
 % fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
 % fprintf('total words: %.f words \n*************************\n', my_length);

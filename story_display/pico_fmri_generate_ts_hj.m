@@ -1,7 +1,7 @@
 function ts = pico_fmri_generate_ts(subject_dir)
 
+subject_dir = '/Users/hongji/Dropbox/PiCo_git/story_display/Text Files/P000_sample';
 stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
-% subject_dir = '/Users/hongji/Dropbox/PiCo_git/story_display/Text Files/P000_sample';
 
 %% story order (randomize)
 
@@ -15,12 +15,11 @@ end
 
 for story_i = 1:numel(stories)
     %out{story_i}.story_name = story_file{story_i}
-    out{story_i} = pico_text_duration_hj(story_file{story_i});
-    fprintf('\n*************************\ntext title: %s', story_file{story_i});
-    %fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
-    %fprintf('total words: %.f words \n*************************\n', my_length);
-    
-    
+    [out{story_i}, cal_duration, my_length] = pico_text_duration_hj(story_file{story_i});
+    fprintf('\n*************************\n text title: %s', story_file{story_i});
+    fprintf('\n total time: %.2f seconds', cal_duration);
+    fprintf('\n total words: %.f words \n*************************\n', my_length);
+    fprintf('\n *************************\n')
 end
 
 %%
