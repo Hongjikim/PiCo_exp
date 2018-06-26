@@ -1,4 +1,4 @@
-function [out, cal_duration, my_length] = pico_text_duration(fname)
+function [out, cal_duration, my_length] = pico_text_duration_hj(fname)
 
 % out = pico_text_duration(fname)
 %
@@ -53,6 +53,7 @@ for i = 1:my_length
         out{i}.total_duration= letter_time + base_time + abs(time_interval(i));
         out{i}.word_type = 'words';
     end
+    
     cal_duration = cal_duration + out{i}.total_duration;
     out{i}.word_duration = letter_time + base_time + abs(time_interval(i));
     msg = doubleText(space_loc(i)+1:space_loc(i+1));
