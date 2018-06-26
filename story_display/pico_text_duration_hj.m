@@ -1,4 +1,4 @@
-function [out, cal_duration, my_length] = pico_text_duration(fname)
+function [out, cal_duration, my_length] = pico_text_duration_hj(fname)
 
 % out = pico_text_duration(fname)
 %
