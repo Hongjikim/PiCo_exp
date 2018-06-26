@@ -10,7 +10,7 @@ subject_dir = '/Users/hongji/Dropbox/PiCo_git/story_display/Text Files/P000_samp
 % cd(basedir); addpath(genpath(basedir));
 
 
-ts = pico_fmri_generate_ts(subjecdir);
+ts = pico_fmri_generate_ts_hj(subject_dir);
 
 % ts{1}: run1
 % ts{2}: run2..

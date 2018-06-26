@@ -125,7 +125,7 @@ for s_num = 1:2
             end
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
             ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-            DrawFormattedText(theWindow, ready_prompt,'center', textH, white);
+            DrawFormattedText(theWindow, ready_prompt,'center', 'center', white);
             Screen('Flip', theWindow);
             
         end
