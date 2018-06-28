@@ -1,6 +1,6 @@
 function ts = pico_fmri_generate_ts_hj
 
-datdir = '/Users/clinpsywoo/Dropbox/github/PiCo/data';
+datdir = '/Users/hongji/Dropbox/PiCo_git/data'; %'/Users/clinpsywoo/Dropbox/github/PiCo/data';
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 
@@ -9,6 +9,8 @@ stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
 %% story order (randomize)
 
 % reorder: stories 
+rng('shuffle');
+
 rand_order = [randperm(4); randperm(4)];
 rand_order(2,:) = rand_order(2,:) + 4;
 self_common = [ones(1,4);ones(1,4)*2];

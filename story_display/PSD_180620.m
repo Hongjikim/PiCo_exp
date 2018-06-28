@@ -51,6 +51,7 @@ global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
 global fontsize window_rect % lb tb recsize barsize rec; % rating scale
 global letter_time period_time comma_time base_time window_ratio
+
 % display time
 letter_time =  0.15*4;   %0.15*4
 period_time = 3;

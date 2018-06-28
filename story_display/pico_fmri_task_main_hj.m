@@ -6,7 +6,7 @@ function pico_fmri_task_main_hj(varargin)
 testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
-datdir = fullfile(pwd, 'data');
+datdir = fullfile(subject_dir); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
 addpath(genpath(pwd));
 
@@ -79,11 +79,17 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color  % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color window_ratio % lb tb recsize barsize rec; % rating scale
 
 % Screen setting
 bgcolor = 100;
-% window_ratio = 1;
+
+if testmode == true
+    window_ratio = 1.4;
+else
+    window_ratio = 1;
+end
+
 
 text_color = 255;
 fontsize = 42; %38?
@@ -93,7 +99,8 @@ screens = Screen('Screens');
 window_num = screens(end);
 Screen('Preference', 'SkipSyncTests', 1);
 window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]; %for mac, [0 0 2560 1600];
+window_rect = [0 0 window_info.width window_info.height]/window_ratio; %for mac, [0 0 2560 1600];
+
 
 W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
@@ -197,41 +204,44 @@ try
         
         for word_i = 1:numel(data.trial_sequence{story_num})
             
+            data.loop_start_time{story_num} = GetSecs;
+        
+            for i = 1:my_length
+                sTime = data.loop_start_time{story_num};
+                data.dat{story_num}{i}.text_start_time = GetSecs;
+                msg = double(data.trial_sequence{1}{1}.msg);
+                data.dat{story_num}{i}.msg = char(msg);
+                data.dat{story_num}{i}.total_duration = data.trial_sequence{1}{1}.total_duration;
+                data.dat{story_num}{i}.word_duration = data.trial_sequence{1}{1}.word_duration;
+                DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
+                Screen('Flip', theWindow);
+               
+                waitsec_fromstarttime(sTime, duration); % Q?? SUM OF THE DURAITON..
+               
+                data.dat{story_num}{i}.text_end_time = GetSecs;
+                if data.trial_sequence{1}{1}.word_type == 'period' % Q?? why 1x6?
+                    DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
+                    Screen('Flip', theWindow);
+                    while GetSecs - sTime < duration(i,2)
+                        %waitsec_fromstarttime(data.loop_start_time{s_num}, 4);
+                    end
+                    data.dat{story_num}{i}.blank_end_time = GetSecs;
+                end
+                data.dat{story_num}{i}.text_end_time = GetSecs;
+                if rem(i,5) == 0
+                    save(data.datafile, 'data', '-append');
+                end
+            end
+        
+            data.loop_end_time{story_num} = GetSecs;
+            save(data.datafile, 'data', '-append');
+        
+            
+            
         end
         
         
-        %
-        %     data.loop_start_time{s_num} = GetSecs;
-        %
-        %     for i = 1:my_length
-        %         sTime = GetSecs;
-        %         data.dat{s_num}{i}.text_start_time = sTime;
-        %         msg = doubleText(space_loc(i)+1:space_loc(i+1));
-        %         data.dat{s_num}{i}.msg = char(msg);
-        %         data.dat{s_num}{i}.duration = duration(i,2);
-        %         letter_num = space_loc(i+1) - space_loc(i);
-        %         DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
-        %         Screen('Flip', theWindow);
-        %         while GetSecs - sTime < letter_time + base_time + abs(time_interval(i)) %0.31 %duration(i,2)
-        %         end
-        %         data.dat{s_num}{i}.text_end_time = GetSecs;
-        %         if duration(i,1) > 1
-        %             DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
-        %             Screen('Flip', theWindow);
-        %             while GetSecs - sTime < duration(i,2)
-        %                 %waitsec_fromstarttime(data.loop_start_time{s_num}, 4);
-        %             end
-        %             data.dat{s_num}{i}.blank_end_time = GetSecs;
-        %         end
-        %         data.dat{s_num}{i}.text_end_time = GetSecs;
-        %         if rem(i,5) == 0
-        %             save(data.datafile, 'data', '-append');
-        %         end
-        %     end
-        %
-        %     data.loop_end_time{s_num} = GetSecs;
-        %     save(data.datafile, 'data', '-append');
-        %
+      
         while GetSecs - sTime < 5
             % when the story is done, wait for 5 seconds. (in Blank)
         end
