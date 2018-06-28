@@ -1,9 +1,9 @@
-function out = pico_text_duration(fname)
+function [out, cal_duration, my_length] = pico_text_duration(fname)
 
 % out = pico_text_duration(fname)
 %
 % :Output:
-%   
+%
 %    out{i}.total_duration
 %    out{i}.word_type
 %    out{i}.word_duration
@@ -36,29 +36,49 @@ space_loc = [0 space_loc];
 my_length = length(space_loc)-1;
 
 time_interval = randn(1,my_length)*.4; % *0.1
-%mean(time_interval);
+
+cal_duration = 0;
+
+
+for j = 1:length(comma_loc)
+    if sum(comma_loc(j) + 1 == space_loc) == 0
+        disp('*** error in contents! ***')
+        fprintf('쉼표 위치: %s \n', myText(comma_loc(j)-2:comma_loc(j)))
+        sca
+        break
+    end
+    for k = 1:length(ending_loc)
+        if sum(ending_loc(k) + 1 == space_loc) == 0
+            disp ('*** error in contents! ***')
+            fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
+            sca
+            return
+        end
+    end
+end
 
 for i = 1:my_length
     
     % letter_num = space_loc(i+1) - space_loc(i);
     if sum(space_loc(i+1) - 1 == comma_loc) ~= 0
-        out{i}.total_duration(i,1) = letter_time + base_time + comma_time + abs(time_interval(i));
+        out{i}.total_duration= letter_time + base_time + comma_time + abs(time_interval(i));
         out{i}.word_type = 'comma';
     elseif sum(space_loc(i+1) - 1 == ending_loc) ~= 0
-        out{i}.total_duration(i,1) = letter_time + base_time + period_time + abs(time_interval(i));
+        out{i}.total_duration= letter_time + base_time + period_time + abs(time_interval(i));
         out{i}.word_type = 'period';
     else
-        out{i}.total_duration(i,1) = letter_time + base_time + abs(time_interval(i));
+        out{i}.total_duration= letter_time + base_time + abs(time_interval(i));
         out{i}.word_type = 'words';
     end
     
-    out{i}.word_duration(i,1) = letter_time + base_time + abs(time_interval(i));
+    cal_duration = cal_duration + out{i}.total_duration;
+    out{i}.word_duration = letter_time + base_time + abs(time_interval(i));
     msg = doubleText(space_loc(i)+1:space_loc(i+1));
     msg(msg==32) = []; % deblank
     out{i}.msg = char(msg);
     out{i}.msg_double = msg;
 end
- 
+
 % fprintf('\n*************************\ntext title: %s', Filename{s_num});
 % fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
 % fprintf('total words: %.f words \n*************************\n', my_length);

@@ -4,7 +4,6 @@ function [data] = story_resting(rest_dur, data, s_num)
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
 global fontsize window_rect text_color% lb tb recsize barsize rec; % rating scale
-global letter_time period_time comma_time base_time %window_ratio 
 
 resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 바라보시며 \n 자유롭게 생각을 하시면 됩니다. \n 중간중간 과제가 나타날 예정입니다.') ;
 DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color);

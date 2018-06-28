@@ -1,4 +1,4 @@
-function pico_fmri_task_main_hj(varargin)
+function pico_fmri_task_main(varargin)
 
 
 %% DEFAULT
@@ -88,7 +88,7 @@ global fontsize window_rect text_color window_ratio % lb tb recsize barsize rec;
 bgcolor = 100;
 
 if testmode == true
-    window_ratio = 2;
+    window_ratio = 1.6;
 else
     window_ratio = 1;
 end
@@ -100,7 +100,7 @@ fontsize = 42; %38?
 
 screens = Screen('Screens');
 window_num = screens(end);
-Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference', 'SkipSyncTests', 0); % Q?? 1
 window_info = Screen('Resolution', window_num);
 window_rect = [0 0 window_info.width window_info.height]/window_ratio; %for mac, [0 0 2560 1600];
 
@@ -117,9 +117,9 @@ orange = [255 164 0];
 %% READY?
 
 fprintf('\n*************************\n RUN %d FIRST story: %s\n', run_n, ts{run_n}{1}{1}.story_name);
-fprintf('total time: %.4fseconds \n \n ', ts{run_n}{1}{1}.story_time);
+fprintf('total time: %.2f seconds \n \n ', ts{run_n}{1}{1}.story_time);
 fprintf('RUN %d SECOND story: %s\n', run_n, ts{run_n}{2}{1}.story_name);
-fprintf('total time: %.4f seconds \n*************************\n', ts{run_n}{2}{1}.story_time);
+fprintf('total time: %.2f seconds \n*************************\n', ts{run_n}{2}{1}.story_time);
 
 
 ready = input(['Check the time. Ready to start with full screen? \n', ...
@@ -136,7 +136,7 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, rect]=Screen('OpenWindow',0, [128 128 128], window_rect/window_ratio);%[0 0 2560/2 1440/2]
+    [theWindow, rect]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
@@ -193,7 +193,7 @@ try
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             
-            waitsec_fromstarttime(data.runscan_starttime, 13);
+            waitsec_fromstarttime(data.runscan_starttime, 14);
             
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
@@ -206,7 +206,7 @@ try
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             sTime_2 = GetSecs;
-            waitsec_fromstarttime(sTime_2, 3)
+            waitsec_fromstarttime(sTime_2, 4)
             
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
@@ -219,27 +219,27 @@ try
         
         for word_i = 1:numel(data.trial_sequence{story_num})
             
-            
             data.dat{story_num}{word_i}.text_start_time = GetSecs;
-            msg = double(data.trial_sequence{1}{1}.msg);
+            msg = double(data.trial_sequence{story_num}{word_i}.msg);
             data.dat{story_num}{word_i}.msg = char(msg);
-            data.dat{story_num}{word_i}.total_duration = data.trial_sequence{1}{1}.total_duration;
-            data.dat{story_num}{word_i}.word_duration = data.trial_sequence{1}{1}.word_duration;
+            data.dat{story_num}{word_i}.total_duration = data.trial_sequence{story_num}{word_i}.total_duration;
+            data.dat{story_num}{word_i}.word_duration = data.trial_sequence{story_num}{word_i}.word_duration;
             DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             
-            duration = duration + data.trial_sequence{1}{1}.word_duration;
+            duration = duration + data.trial_sequence{story_num}{word_i}.word_duration;
             
-            waitsec_fromstarttime(sTime, duration); % Q?? SUM OF THE DURAITON..
+            waitsec_fromstarttime(sTime, duration);
             
             data.dat{story_num}{word_i}.text_end_time = GetSecs;
-            if ~strcmp(data.trial_sequence{1}{1}.word_type, 'words')
+            if ~strcmp(data.trial_sequence{story_num}{word_i}.word_type, 'words')
                 DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
                 Screen('Flip', theWindow);
                 
-                duration = duration + data.trial_sequence{1}{1}.total_duration - data.trial_sequence{1}{1}.word_duration;
+                duration = duration + data.trial_sequence{story_num}{word_i}.total_duration ...
+                    - data.trial_sequence{story_num}{word_i}.word_duration;
                 
-                waitsec_fromstarttime(sTime, duration); % Q?? SUM OF THE DURAITON..
+                waitsec_fromstarttime(sTime, duration);
                 
                 data.dat{story_num}{word_i}.blank_end_time = GetSecs;
             end
@@ -251,27 +251,26 @@ try
         
         data.loop_end_time{story_num} = GetSecs;
         save(data.datafile, 'data', '-append');
-
+        
+        
+        
+        while GetSecs - sTime < 5
+            % when the story is done, wait for 5 seconds. (in Blank)
+        end
+        
+        %         rest_dur = 10;
+        %         [data] = story_resting(rest_dur, data, s_num);
+        %
+        save(data.datafile, 'data', '-append');
+        
+        data.endtime_getsecs = GetSecs;
+        save(data.datafile, 'data', '-append');
         
     end
     
+    KbStrokeWait;
+    sca;
     
-    while GetSecs - sTime < 5
-        % when the story is done, wait for 5 seconds. (in Blank)
-    end
-    
-    rest_dur = 10;
-    [data] = story_resting(rest_dur, data, s_num);
-    
-    save(data.datafile, 'data', '-append');
-
-data.endtime_getsecs = GetSecs;
-save(data.datafile, 'data', '-append');
-
-KbStrokeWait;
-sca;
-
-
 catch err
     
     % ERROR
@@ -279,9 +278,9 @@ catch err
     for i = 1:numel(err.stack)
         disp(err.stack(i));
     end
-    fclose(t);
-    fclose(r);
-    abort_error;
+    %     fclose(t);
+    %     fclose(r);  % Q??
+    abort_experiment('error');
     
 end
 
@@ -327,7 +326,6 @@ end_msg = double('끝입니다.') ;
 DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
 Screen('Flip', theWindow);
 end
-
 
 function abort_experiment(varargin)
 
@@ -523,3 +521,4 @@ while(1)
     end
 end
 end
+
