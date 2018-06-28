@@ -1,4 +1,4 @@
-function ts = pico_fmri_generate_ts_hj
+function [ts] = pico_fmri_generate_ts_hj
 
 datdir = '/Users/hongji/Dropbox/PiCo_git/data'; %'/Users/clinpsywoo/Dropbox/github/PiCo/data';
 sid = input('Subject ID? (e.g., pico001): ', 's');
@@ -29,11 +29,18 @@ stories = stories(rand_order);
 
 for story_i = 1:numel(stories)
     [out{story_i}, cal_duration, my_length] = pico_text_duration_hj(stories{story_i});
-    out{story_i}{1}.story_name = stories{story_i}; % name of the story..
+    [~, story_name] = fileparts(stories{story_i});
+    out{story_i}{1}.story_name = story_name;
+    out{story_i}{1}.story_time = cal_duration; 
     fprintf('\n*************************\n text file: %s', stories{story_i});
     fprintf('\n total time: %.2f seconds', cal_duration);
     fprintf('\n total words: %.f words \n*************************\n', my_length);
 end
+
+for story_i = 1:numel(stories)
+    fprintf('story order %d: %s\n', story_i, out{story_i}{1}.story_name)
+end
+
 
 %% add out into ts
 

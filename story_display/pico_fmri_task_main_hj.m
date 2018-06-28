@@ -6,9 +6,12 @@ function pico_fmri_task_main_hj(varargin)
 testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
-datdir = fullfile(subject_dir); % (, 'data');
+
+basedir = '/Users/hongji/Dropbox/PiCo_git';
+% basedir = pwd;
+datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
-addpath(genpath(pwd));
+addpath(genpath(basedir));
 
 
 %% PARSING VARARGIN
@@ -42,7 +45,7 @@ ts_fname = filenames(fullfile(subject_dir, 'trial_sequence*.mat'));
 if numel(ts_fname)>1
     error('There are more than one ts file. Please check and delete the wrong files.')
 else
-    load(ts_fname);
+    load(ts_fname{1}); %Q?? ts_fname
 end
 
 run_n = input('Run number? (e.g., 1): ');
@@ -85,7 +88,7 @@ global fontsize window_rect text_color window_ratio % lb tb recsize barsize rec;
 bgcolor = 100;
 
 if testmode == true
-    window_ratio = 1.4;
+    window_ratio = 2;
 else
     window_ratio = 1;
 end
@@ -113,6 +116,12 @@ orange = [255 164 0];
 
 %% READY?
 
+fprintf('\n*************************\n RUN %d FIRST story: %s\n', run_n, ts{run_n}{1}{1}.story_name);
+fprintf('total time: %.4fseconds \n \n ', ts{run_n}{1}{1}.story_time);
+fprintf('RUN %d SECOND story: %s\n', run_n, ts{run_n}{2}{1}.story_name);
+fprintf('total time: %.4f seconds \n*************************\n', ts{run_n}{2}{1}.story_time);
+
+
 ready = input(['Check the time. Ready to start with full screen? \n', ...
     '\n1: Yes, continue  ,   2: No,  I`ll break.\n:  ']);
 if ready == 2
@@ -127,9 +136,9 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, rect]=Screen('OpenWindow',0, [128 128 128], window_rect);%[0 0 2560/2 1440/2]
+    [theWindow, rect]=Screen('OpenWindow',0, [128 128 128], window_rect/window_ratio);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-    font = 'AppleGothic'; % check
+    font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize);
     if ~testmode, HideCursor; end
@@ -184,81 +193,85 @@ try
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             
-            waitsec_fromstarttime(data.runscan_starttime, 13); 
+            waitsec_fromstarttime(data.runscan_starttime, 13);
             
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
             
-            waitsec_fromstarttime(data.runscan_starttime, 17); 
+            waitsec_fromstarttime(data.runscan_starttime, 17);
             
         else
             % Start second display
-            start_msg = double('두 번째 이야기를 시작하겠습니다. \n\n 화면의 중앙에 단어가 나타날 예정이니 화면에 집중해주세요. \n\n 글의 내용에 최대한 몰입해주세요. ') ;
+            start_msg = double('두 번째 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             sTime_2 = GetSecs;
-            while GetSecs - sTime_2 < 5 % when the story is starting, wait for 5 seconds.
-            end
+            waitsec_fromstarttime(sTime_2, 3)
+            
+            Screen(theWindow,'FillRect',bgcolor, window_rect);
+            Screen('Flip', theWindow);
+            waitsec_fromstarttime(sTime_2, 7)
         end
         
+        data.loop_start_time{story_num} = GetSecs;
+        sTime = data.loop_start_time{story_num};
+        duration = 0;
         
         for word_i = 1:numel(data.trial_sequence{story_num})
             
-            data.loop_start_time{story_num} = GetSecs;
-        
-            for i = 1:my_length
-                sTime = data.loop_start_time{story_num};
-                data.dat{story_num}{i}.text_start_time = GetSecs;
-                msg = double(data.trial_sequence{1}{1}.msg);
-                data.dat{story_num}{i}.msg = char(msg);
-                data.dat{story_num}{i}.total_duration = data.trial_sequence{1}{1}.total_duration;
-                data.dat{story_num}{i}.word_duration = data.trial_sequence{1}{1}.word_duration;
-                DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
+            
+            data.dat{story_num}{word_i}.text_start_time = GetSecs;
+            msg = double(data.trial_sequence{1}{1}.msg);
+            data.dat{story_num}{word_i}.msg = char(msg);
+            data.dat{story_num}{word_i}.total_duration = data.trial_sequence{1}{1}.total_duration;
+            data.dat{story_num}{word_i}.word_duration = data.trial_sequence{1}{1}.word_duration;
+            DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
+            Screen('Flip', theWindow);
+            
+            duration = duration + data.trial_sequence{1}{1}.word_duration;
+            
+            waitsec_fromstarttime(sTime, duration); % Q?? SUM OF THE DURAITON..
+            
+            data.dat{story_num}{word_i}.text_end_time = GetSecs;
+            if ~strcmp(data.trial_sequence{1}{1}.word_type, 'words')
+                DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
                 Screen('Flip', theWindow);
-               
+                
+                duration = duration + data.trial_sequence{1}{1}.total_duration - data.trial_sequence{1}{1}.word_duration;
+                
                 waitsec_fromstarttime(sTime, duration); % Q?? SUM OF THE DURAITON..
-               
-                data.dat{story_num}{i}.text_end_time = GetSecs;
-                if data.trial_sequence{1}{1}.word_type == 'period' % Q?? why 1x6?
-                    DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
-                    Screen('Flip', theWindow);
-                    while GetSecs - sTime < duration(i,2)
-                        %waitsec_fromstarttime(data.loop_start_time{s_num}, 4);
-                    end
-                    data.dat{story_num}{i}.blank_end_time = GetSecs;
-                end
-                data.dat{story_num}{i}.text_end_time = GetSecs;
-                if rem(i,5) == 0
-                    save(data.datafile, 'data', '-append');
-                end
+                
+                data.dat{story_num}{word_i}.blank_end_time = GetSecs;
             end
-        
-            data.loop_end_time{story_num} = GetSecs;
-            save(data.datafile, 'data', '-append');
-        
             
-            
+            if rem(word_i,5) == 0
+                save(data.datafile, 'data', '-append');
+            end
         end
         
-        
-      
-        while GetSecs - sTime < 5
-            % when the story is done, wait for 5 seconds. (in Blank)
-        end
-        
-        rest_dur = 20;
-        [data] = story_resting(rest_dur, data, s_num);
-        
+        data.loop_end_time{story_num} = GetSecs;
         save(data.datafile, 'data', '-append');
+
+        
     end
     
-    data.endtime_getsecs = GetSecs;
+    
+    while GetSecs - sTime < 5
+        % when the story is done, wait for 5 seconds. (in Blank)
+    end
+    
+    rest_dur = 10;
+    [data] = story_resting(rest_dur, data, s_num);
+    
     save(data.datafile, 'data', '-append');
-    
-    KbStrokeWait;
-    sca;
-    
-    
+
+data.endtime_getsecs = GetSecs;
+save(data.datafile, 'data', '-append');
+
+KbStrokeWait;
+sca;
+
+
 catch err
     
     % ERROR
@@ -273,6 +286,7 @@ catch err
 end
 
 end
+
 
 
 %% ====== SUBFUNCTIONS ======

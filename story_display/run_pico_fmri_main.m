@@ -6,12 +6,11 @@
 % words_data
 
 %%
-% subject_dir = '/Users/hongji/Dropbox/PiCo_git/data/pico001_khj'; %'/Users/hongji/Dropbox/PiCo_git/story_display/Text Files/P000_sample';
+% subject_dir = '/Users/hongji/Dropbox/PiCo_git/data/pico001_khj'; 
 % cd(subject_dir); addpath(genpath(subject_dir));
 
 
-ts = pico_fmri_generate_ts_hj; %(subject_dir);
-
+ts= pico_fmri_generate_ts_hj; 
 % ts{1}: run1
 % ts{2}: run2..
 
@@ -20,7 +19,7 @@ pico_fmri_resting(1);
 
 %% run 1
 run_i = 1;
-pico_fmri_task_main_hj(ts{run_i}, 'testmode'); % 'biopac', 'fmri',  'eye');
+pico_fmri_task_main_hj('testmode'); % 'biopac', 'fmri',  'eye');
 
 %% run 2
 run_i = 2;
