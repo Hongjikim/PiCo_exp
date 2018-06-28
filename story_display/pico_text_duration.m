@@ -14,9 +14,9 @@ function [out, cal_duration, my_length] = pico_text_duration(fname)
 
 
 % default setting
-letter_time =  0.15*4;   %0.15*4
-period_time = 3;
-comma_time = 1.5;
+letter_time =  0.1;   %0.15*4
+period_time = 1; %3;
+comma_time = 1; %1.5;
 base_time = 0;
 
 myFile = fopen(fname, 'r'); %fopen('pico_story_kor_ANSI.txt', 'r');

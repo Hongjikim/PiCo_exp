@@ -15,8 +15,8 @@ pico_fmri_resting(1);
 
 %% run 1
 % run_i = 1;
-pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
-% pico_fmri_task_main_0629('testmode'); % 'biopac', 'fmri',  'eye');
+%pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
+pico_fmri_task_main_0629('testmode'); % 'biopac', 'fmri',  'eye');
 
 %% run 2
 run_i = 2;

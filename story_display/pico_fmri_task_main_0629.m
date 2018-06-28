@@ -258,9 +258,8 @@ try
             % when the story is done, wait for 5 seconds. (in Blank)
         end
         
-        %         rest_dur = 10;
-        %         [data] = story_resting(rest_dur, data, s_num);
-        %
+        data = story_free(data, story_num); %free thinking for story!
+        
         save(data.datafile, 'data', '-append');
         
         data.endtime_getsecs = GetSecs;
@@ -291,36 +290,61 @@ end
 %% ====== SUBFUNCTIONS ======
 
 
+function data = story_free(data, story_num)
 
-% story_free_thinking
-
-function data = story_resting(rest_dur, data, story_num)
-
-% SETUP: global
 global theWindow W H; % window property
-global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color% lb tb recsize barsize rec; % rating scale
-global letter_time period_time comma_time base_time %window_ratio
+global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
 
-resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 바라보시며 \n 자유롭게 생각을 하시면 됩니다. \n 중간중간 과제가 나타날 예정입니다.') ;
-DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color);
+resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 바라보시며 \n 자유롭게 생각을 하시면 됩니다. \n') ;
+DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color, [], [], [], 1.5);
 Screen('Flip', theWindow);
 
-sTime = GetSecs;
-while GetSecs - sTime < 10
-    % when the story is done, wait for 5 seconds. (in Blank)
-end
+resting_instruction = GetSecs;
+waitsec_fromstarttime(resting_instruction, 7)
+data.resting{story_num}.instructon_start_time = resting_instruction;
+
+resting_msg2 = double('중간중간 십자표시가 사라질 때 마다 \n 하고 계신 생각을 단어나 구로 표현해주세요. \n 준비가 되시면 ''시작''이라고 말씀해주시기 바랍니다.\n') ;
+DrawFormattedText(theWindow, resting_msg2, 'center', 'center', text_color, [], [], [], 1.5);
+Screen('Flip', theWindow);
+
+waitsec_fromstarttime(resting_instruction, 15)
 
 fixation_point = double('+') ;
 DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
 Screen('Flip', theWindow);
 
-sTime = GetSecs;
-data.resting_start_time{s_num} = GetSecs;
-while GetSecs - sTime < rest_dur
-    % when the story is done, wait for 5 seconds. (in Blank)
+resting_sTime = GetSecs;
+data.resting{story_num}.fixation_start_time = resting_sTime;
+
+
+sampling_time = [30 60 90 120] + randi(10,1,4) ;
+data.resting{story_num}.sampling_time = sampling_time;
+
+
+while GetSecs - resting_sTime < 150
+    for i = 1:4
+        while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
+            data.resting{story_num}.start_Sampling{i} = GetSecs;
+            blank = double(' ') ;
+            DrawFormattedText(theWindow, blank, 'center', 'center', text_color);
+            Screen('Flip', theWindow);
+        end
+        data.resting{story_num}.end_Sampling{i} = GetSecs;
+        fixation_point = double('+') ;
+        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+        Screen('Flip', theWindow);
+        
+
+    end
+%     else
+%         fixation_point = double('+') ;
+%         DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+%         Screen('Flip', theWindow);
+%     end
+ 
 end
-data.resting_end_time{s_num} = GetSecs;
+
+data.resting{story_num}.fixation_end_time = GetSecs;
 
 end_msg = double('끝입니다.') ;
 DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
