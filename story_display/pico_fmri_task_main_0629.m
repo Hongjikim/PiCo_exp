@@ -252,11 +252,12 @@ try
         data.loop_end_time{story_num} = GetSecs;
         save(data.datafile, 'data', '-append');
         
-        
-        
         while GetSecs - sTime < 5
             % when the story is done, wait for 5 seconds. (in Blank)
         end
+        
+        
+        waitsec_fromstarttime(data.runscan_starttime, 240);
         
         data = story_free(data, story_num); %free thinking for story!
         
@@ -295,7 +296,7 @@ function data = story_free(data, story_num)
 global theWindow W H; % window property
 global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
 
-resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 바라보시며 \n 자유롭게 생각을 하시면 됩니다. \n') ;
+resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 보면서\n 자유롭게 아무 생각이나 하시면 됩니다. \n') ;
 DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color, [], [], [], 1.5);
 Screen('Flip', theWindow);
 
@@ -317,7 +318,7 @@ resting_sTime = GetSecs;
 data.resting{story_num}.fixation_start_time = resting_sTime;
 
 
-sampling_time = [30 60 90 120] + randi(10,1,4) ;
+sampling_time = [50 100] + randi(10,1,2) - 5;
 data.resting{story_num}.sampling_time = sampling_time;
 
 
@@ -516,8 +517,8 @@ while(1)
     Screen('DrawDots', theWindow, [x y], 10, orange, [0, 0], 1); % draw orange dot on the cursor
     Screen('Flip', theWindow);
     
-    trajectory(j,:) = [(x-W/2)/(W/3)];    % trajectory of location of cursor
-    trajectory_time(j) = GetSecs - starttime; % trajectory of time
+    trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
+    trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
     
     if trajectory_time(end) >= cqT  % maximum time of rating is 5s
         button(1) = true;
