@@ -256,8 +256,11 @@ try
             % when the story is done, wait for 5 seconds. (in Blank)
         end
         
-        
-        waitsec_fromstarttime(data.runscan_starttime, 240);
+        fixation_point = double('+') ;
+        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+        Screen('Flip', theWindow);
+       
+        waitsec_fromstarttime(data.runscan_starttime, 150);
         
         data = story_free(data, story_num); %free thinking for story!
         
@@ -296,20 +299,6 @@ function data = story_free(data, story_num)
 global theWindow W H; % window property
 global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
 
-resting_msg = double('이야기의 끝입니다.\n 지금부터는 중앙의 십자 표시를 보면서\n 자유롭게 아무 생각이나 하시면 됩니다. \n') ;
-DrawFormattedText(theWindow, resting_msg, 'center', 'center', text_color, [], [], [], 1.5);
-Screen('Flip', theWindow);
-
-resting_instruction = GetSecs;
-waitsec_fromstarttime(resting_instruction, 7)
-data.resting{story_num}.instructon_start_time = resting_instruction;
-
-resting_msg2 = double('중간중간 십자표시가 사라질 때 마다 \n 하고 계신 생각을 단어나 구로 표현해주세요. \n 준비가 되시면 ''시작''이라고 말씀해주시기 바랍니다.\n') ;
-DrawFormattedText(theWindow, resting_msg2, 'center', 'center', text_color, [], [], [], 1.5);
-Screen('Flip', theWindow);
-
-waitsec_fromstarttime(resting_instruction, 15)
-
 fixation_point = double('+') ;
 DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
 Screen('Flip', theWindow);
@@ -323,11 +312,11 @@ data.resting{story_num}.sampling_time = sampling_time;
 
 
 while GetSecs - resting_sTime < 150
-    for i = 1:4
+    for i = 1:2
         while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
             data.resting{story_num}.start_Sampling{i} = GetSecs;
-            blank = double(' ') ;
-            DrawFormattedText(theWindow, blank, 'center', 'center', text_color);
+            FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
+            DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
         end
         data.resting{story_num}.end_Sampling{i} = GetSecs;

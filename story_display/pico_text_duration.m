@@ -37,25 +37,30 @@ my_length = length(space_loc)-1;
 
 time_interval = randn(1,my_length)*.4; % *0.1
 
-cal_duration = 0;
+cal_duration = 0;  % 63, 93, 139
 
-
-for j = 1:length(comma_loc)
-    if sum(comma_loc(j) + 1 == space_loc) == 0
-        disp('*** error in contents! ***')
-        fprintf('쉼표 위치: %s \n', myText(comma_loc(j)-2:comma_loc(j)))
-        sca
-        break
-    end
-    for k = 1:length(ending_loc)
-        if sum(ending_loc(k) + 1 == space_loc) == 0
-            disp ('*** error in contents! ***')
-            fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
-            sca
-            return
-        end
-    end
+aa = find([0 space_loc] - [space_loc space_loc(end)] == -1) ; 
+if  numel(aa) > 2
+    fprintf('연속된 빈칸이 %d째 단어에 있으니 확인 바람.', aa)
 end
+
+
+% for j = 1:length(comma_loc)
+%     if sum(comma_loc(j) + 1 == space_loc) == 0
+%         disp('*** error in contents! ***')
+%         fprintf('쉼표 위치: %s \n', myText(comma_loc(j)-2:comma_loc(j)))
+%         sca
+%         break
+%     end
+%     for k = 1:length(ending_loc)
+%         if sum(ending_loc(k) + 1 == space_loc) == 0
+%             disp ('*** error in contents! ***')
+%             fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
+%             sca
+%             return
+%         end
+%     end
+% end
 
 for i = 1:my_length
     
