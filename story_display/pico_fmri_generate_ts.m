@@ -41,7 +41,6 @@ for story_i = 1:numel(stories)
     fprintf('story order %d: %s\n', story_i, out{story_i}{1}.story_name)
 end
 
-
 %% add out into ts
 
 run_i = 1;

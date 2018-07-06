@@ -11,7 +11,7 @@ cd('/Users/hongji/Dropbox/PiCo_git/story_display');
 ts= pico_fmri_generate_ts;  %error 나타나는 위치 질문
 
 %% resting
-pico_fmri_resting(1);
+pico_fmri_resting('testmode');
 
 %% run 1
 % run_i = 1;
