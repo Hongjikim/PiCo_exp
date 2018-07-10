@@ -22,21 +22,36 @@ the_text = 'Copy_of_pico_story_kor_ANSI.txt'
 %
 sTime = GetSecs;
 ready2=0;
-rec=0;
+rec=1;
 
 SetMouse(70, 200); % set mouse at the starting point
 x=70; y=200;
+xc = x;
+yc = y;
+
+t = GetSecs;
+
 for ii = 1:k
     DrawFormattedText(theWindow, double_text(ii,:), 85, 75, 0, 65, 0, 0, 14.5); % 10 = 14.5
     while ~ready2
          
         draw_axis_PDR([200 550]);
         
-        rec=rec+1;
         [x,y,button] = GetMouse(theWindow);
         
-        xc(rec,:)=x;
-        yc(rec,:)=y;
+        t(2) = t(1);
+        t(1) = GetSecs;
+        intv = round(-diff(t)*80);
+        
+        vec_x = xc(rec):((x-xc(rec))/intv):x;
+        vec_y = yc(rec):((y-yc(rec))/intv):y;
+        xc((rec+1):(rec+intv),:)=vec_x(2:end);
+        yc((rec+1):(rec+intv),:)=vec_y(2:end);
+        
+        rec = rec + intv;
+%         
+%         xc(rec,:)=x;
+%         yc(rec,:)=y;
         
         % if the point goes further than the box, move the point to
         % the closest point
