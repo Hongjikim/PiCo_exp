@@ -1,15 +1,16 @@
 % Filename = 'sample_3.txt'
 
 
-myFile = fopen('sample_3.txt','r'); %fopen('pico_story_kor_ANSI.txt', 'r');
+myFile = fopen('story_11_KJH.txt','r'); %fopen('pico_story_kor_ANSI.txt', 'r');
 myText = fgetl(myFile);
 fclose(myFile);
 doubleText = double(myText);
 
 if doubleText(end) ~= 32
-    doubleText= [doubleText 32 32 32 32];
+    doubleText= [doubleText 32 32 32 32 32];
 end
 
+%%
 space_loc = find(doubleText==32); % location of space ' '
 comma_loc = find(doubleText==44);
 ending_loc = find(doubleText==46);
