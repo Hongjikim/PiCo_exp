@@ -1,4 +1,4 @@
-function [out, cal_duration, my_length, rating_period_loc] = pico_text_duration_0713(fname)
+function [out, cal_duration, my_length] = pico_text_duration(fname)
 
 % out = pico_text_duration(fname)
 %
@@ -31,17 +31,6 @@ end
 space_loc = find(doubleText==32); % location of space ' '
 comma_loc = find(doubleText==44);
 ending_loc = find(doubleText==46);
-
-% EMOTION RATING SETTING
-pn = numel(ending_loc); % period number
-rating_pn(1) = round(0.25*pn);
-rating_pn(2) = round(0.5*pn);
-rating_pn(3) = round(0.75*pn);
-period_loc_sampled = ending_loc(rating_pn);
-period_loc_sampled = period_loc_sampled + 1;
-for l = 1:3
-    rating_period_loc(l) = find(space_loc == period_loc_sampled(l));
-end
 
 space_loc = [0 space_loc];
 my_length = length(space_loc)-1;

@@ -164,10 +164,15 @@ data.trajectory_save = [x_save y_save];
 % subplot(1,2,2)
 % plot(data.trajectory_save(:,1), -data.trajectory_save(:,2))
 % 
-% scatter(data.trajectory_save(:,1), -data.trajectory_save(:,2))
-% scatter(data.trajectory_save(:,1), -data.trajectory_save(:,2))
+subplot(1,2,1)
+scatter(data.trajectory_full(:,1), -data.trajectory_full(:,2))
+subplot(1,2,2)
+scatter(data.trajectory_save(:,1), -data.trajectory_save(:,2))
 % scatterplot(data.trajectory_save)
 % scatterplot(data.trajectory_save)
+
+figure; plot(a(:,1), a(:,2)); hold on
+plot(b(:,1), b(:,2))
 
 save(data.datafile, 'data');
 

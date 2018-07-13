@@ -305,174 +305,6 @@ disp(str); %present this text in command window
 end
 
 
-function [emotion_word, trajectory_time, trajectory] = emotion_rating(starttime)
-
-global W H orange bgcolor window_rect theWindow red rT
-
-rng('shuffle');        % it prevents pseudo random number
-rand_z = randperm(14); % random seed
-[choice, xy_rect] = display_emotion_words(rand_z);
-
-SetMouse(880, 500);
-% SetMouse(W/2, H/2);
-
-trajectory = [];
-trajectory_time = [];
-
-j = 0;
-
-while(1)
-    j = j + 1;
-    [x, y, button] = GetMouse(theWindow);
-    mx = x*1.1;
-    my = y*1.1;
-    
-    Screen(theWindow,'FillRect',bgcolor, window_rect);
-    display_emotion_words(rand_z);
-    Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-    Screen('Flip', theWindow);
-    
-    trajectory(j,:) = [mx my];                  % trajectory of location of cursor
-    trajectory_time(j) = GetSecs - starttime; % trajectory of time
-    
-    if trajectory_time(end) >= rT  % maximum time of rating is 8s
-        button(1) = true;
-    end
-    
-    if button(1)  % After click, the color of cursor dot changes.
-        Screen(theWindow,'FillRect',bgcolor, window_rect);
-        display_emotion_words(rand_z);
-        Screen('DrawDots', theWindow, [mx;my], 10, red, [0 0], 1);
-        Screen('Flip', theWindow);
-        
-        % which word based on x y from mouse click
-        choice_idx = mx > xy_rect(:,1) & mx < xy_rect(:,3) & my > xy_rect(:,2) & my < xy_rect(:,4);
-        if any(choice_idx)
-            emotion_word = choice{choice_idx};
-        else
-            emotion_word = '';
-        end
-        
-        WaitSecs(0.3);
-        
-        break;
-    end
-end
-
-end
-
-function [choice, xy_rect] = display_emotion_words(z)
-
-global W H white theWindow window_rect bgcolor square fontsize
-
-square = [0 0 140 80];  % size of square of word
-r=350;
-t=360/28;
-theta=[t, t*3, t*5, t*7, t*9, t*11, t*13, t*15, t*17, t*19, t*21, t*23, t*25, t*27];
-xy=[W/2+r*cosd(theta(1)) H/2-r*sind(theta(1)); W/2+r*cosd(theta(2)) H/2-r*sind(theta(2)); ...
-    W/2+r*cosd(theta(3)) H/2-r*sind(theta(3)); W/2+r*cosd(theta(4)) H/2-r*sind(theta(4));...
-    W/2+r*cosd(theta(5)) H/2-r*sind(theta(5)); W/2+r*cosd(theta(6)) H/2-r*sind(theta(6));...
-    W/2+r*cosd(theta(7)) H/2-r*sind(theta(7)); W/2+r*cosd(theta(8)) H/2-r*sind(theta(8));...
-    W/2+r*cosd(theta(9)) H/2-r*sind(theta(9)); W/2+r*cosd(theta(10)) H/2-r*sind(theta(10));...
-    W/2+r*cosd(theta(11)) H/2-r*sind(theta(11)); W/2+r*cosd(theta(12)) H/2-r*sind(theta(12));...
-    W/2+r*cosd(theta(13)) H/2-r*sind(theta(13)); W/2+r*cosd(theta(14)) H/2-r*sind(theta(14))];
-
-xy_word = [xy(:,1)-square(3)/2, xy(:,2)-square(4)/2-15, xy(:,1)+square(3)/2, xy(:,2)+square(4)/2];
-xy_rect = [xy(:,1)-square(3)/2, xy(:,2)-square(4)/2, xy(:,1)+square(3)/2, xy(:,2)+square(4)/2];
-
-colors = 200;
-
-%% words
-
-choice = {'기쁨', '괴로움', '희망', '두려움', '행복', '실망', '자부심', '부끄러움', '후회', '슬픔', '분노', '사랑', '미움', '없음'};
-choice = choice(z);
-
-%%
-Screen(theWindow,'FillRect',bgcolor, window_rect);
-Screen('TextSize', theWindow, fontsize);
-% Rectangle
-for i = 1:numel(theta)
-    Screen('FrameRect', theWindow, colors, CenterRectOnPoint(square,xy(i,1),xy(i,2)),3);
-end
-% Choice letter
-for i = 1:numel(choice)
-    DrawFormattedText(theWindow, double(choice{i}), 'center', 'center', white, [],[],[],[],[],xy_word(i,:));
-end
-
-end
-
-function [concentration, trajectory_time, trajectory] = concent_rating(starttime)
-
-global W H orange bgcolor window_rect theWindow red fontsize white cqT
-intro_prompt1 = double('지금, 나타나는 단어들에 대해 얼마나 주의를 잘 기울이고 계신가요?');
-intro_prompt2 = double('8초 안에 트랙볼을 움직여서 집중하고 있는 정도를 클릭해주세요.');
-title={'전혀 기울이지 않음','보통', '매우 집중하고 있음'};
-
-SetMouse(W/2, H/2);
-
-trajectory = [];
-trajectory_time = [];
-xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3;
-    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
-
-j = 0;
-
-while(1)
-    j = j + 1;
-    [mx, my, button] = GetMouse(theWindow);
-    
-    x = mx;
-    y = H/2;
-    if x < W/3, x = W/3;
-    elseif x > W*2/3, x = W*2/3;
-    end
-    
-    Screen('TextSize', theWindow, fontsize);
-    Screen(theWindow,'FillRect',bgcolor, window_rect);
-    Screen('DrawLines',theWindow, xy, 5, 255);
-    DrawFormattedText(theWindow, intro_prompt1,'center', H/4, white);
-    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
-    % Draw scale letter
-    DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
-        [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);
-    DrawFormattedText(theWindow, double(title{2}),'center', 'center', white, ...
-        [],[],[],[],[], [W/2-15, xy(2,1), W/2+20, xy(2,1)+60]);
-    DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
-        [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
-    
-    Screen('DrawDots', theWindow, [x y], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-    Screen('Flip', theWindow);
-    
-    trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
-    trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
-    
-    if trajectory_time(end) >= cqT  % maximum time of rating is 5s
-        button(1) = true;
-    end
-    
-    if button(1)  % After click, the color of cursor dot changes.
-        Screen(theWindow,'FillRect',bgcolor, window_rect);
-        Screen('DrawLines',theWindow, xy, 5, 255);
-        DrawFormattedText(theWindow, intro_prompt1,'center', H/4, white);
-        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
-        % Draw scale letter
-        DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
-            [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);
-        DrawFormattedText(theWindow, double(title{2}),'center', 'center', white, ...
-            [],[],[],[],[], [W/2-15, xy(2,1), W/2+20, xy(2,1)+60]);
-        DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
-            [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
-        Screen('DrawDots', theWindow, [x;y], 10, red, [0 0], 1);
-        Screen('Flip', theWindow);
-        
-        concentration = (x-W/3)/(W/3);  % 0~1
-        
-        WaitSecs(0.3);
-        break;
-    end
-end
-end
-
 
 function data = pico_post_run_survey_resting(data, ft_num, varargin)
 
@@ -489,12 +321,12 @@ end
 save(data.datafile, 'data', '-append');
     
 % QESTION
-    title={'방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
-        '방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
-        '방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
-        '방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
-        '방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
-        '방금 쉬는 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
+    title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
+        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
+        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
+        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
+        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
+        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
         '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
         '중립', '', '현재', '', '중립', '';
         '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
