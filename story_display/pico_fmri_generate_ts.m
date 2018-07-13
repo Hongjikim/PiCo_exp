@@ -28,10 +28,11 @@ stories = stories(rand_order);
 %% calculate and print out text duration
 
 for story_i = 1:numel(stories)
-    [out{story_i}, cal_duration, my_length] = pico_text_duration(stories{story_i});
+    [out{story_i}, cal_duration, my_length, rating_period_loc] = pico_text_duration_0713(stories{story_i});
     [~, story_name] = fileparts(stories{story_i});
     out{story_i}{1}.story_name = story_name;
-    out{story_i}{1}.story_time = cal_duration; 
+    out{story_i}{1}.story_time = cal_duration;
+    out{story_i}{1}.rating_period_loc = rating_period_loc;
     fprintf('\n*************************\n text file: %s', stories{story_i});
     fprintf('\n total time: %.2f seconds', cal_duration);
     fprintf('\n total words: %.f words \n*************************\n', my_length);

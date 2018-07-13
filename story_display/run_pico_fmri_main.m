@@ -16,7 +16,7 @@ pico_fmri_resting('testmode');
 %% run 1
 % run_i = 1;
 %pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
-pico_fmri_task_main_0629('testmode'); % 'biopac', 'fmri',  'eye');
+pico_fmri_task_main_0713('testmode'); % 'biopac', 'fmri',  'eye');
 
 %% run 2
 run_i = 2;
@@ -27,7 +27,7 @@ run_i = 3;
 pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
 
 %% run 4
-run_i = 4;
+run_i = 4; 
 pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
 
 %% resting

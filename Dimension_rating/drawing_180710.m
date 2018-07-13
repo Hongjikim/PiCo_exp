@@ -23,11 +23,14 @@ the_text = 'Copy_of_pico_story_kor_ANSI.txt'
 sTime = GetSecs;
 ready2=0;
 rec=1;
+rec2=0;
 
 SetMouse(70, 200); % set mouse at the starting point
 x=70; y=200;
 xc = x;
 yc = y;
+x_save = x;
+y_save = y;
 
 t = GetSecs;
 
@@ -35,21 +38,41 @@ for ii = 1:k
     DrawFormattedText(theWindow, double_text(ii,:), 85, 75, 0, 65, 0, 0, 14.5); % 10 = 14.5
     while ~ready2
          
+  
         draw_axis_PDR([200 550]);
         
         [x,y,button] = GetMouse(theWindow);
         
+        
         t(2) = t(1);
         t(1) = GetSecs;
-        intv = round(-diff(t)*80);
+        intv = round(-diff(t)*2000);
         
-        vec_x = xc(rec):((x-xc(rec))/intv):x;
-        vec_y = yc(rec):((y-yc(rec))/intv):y;
+        if xc(rec) ~= x
+            vec_x = (xc(rec):((x-xc(rec))/intv):x)';
+        else
+            vec_x = repmat(x, intv+1,1);
+        end
+        
+        if yc(rec) ~= y
+            vec_y = yc(rec):((y-yc(rec))/intv):y;
+        else
+            vec_y = repmat(y, intv+1,1);
+        end
+        
         xc((rec+1):(rec+intv),:)=vec_x(2:end);
         yc((rec+1):(rec+intv),:)=vec_y(2:end);
-        
         rec = rec + intv;
-%         
+        
+        if rec2 ~= 0
+            if x_save(rec2) ~= x || y_save(rec2) ~= y
+                rec2 = rec2 + 1;
+                x_save(rec2,:)=x;
+                y_save(rec2,:)=y;
+            end
+        end
+
+
 %         xc(rec,:)=x;
 %         yc(rec,:)=y;
         
