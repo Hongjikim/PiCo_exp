@@ -701,6 +701,7 @@ save(data.datafile, 'data', '-append');
                 Screen('Flip', theWindow);
                 
                 if button(1)
+                    post_run.rating{1,z(i)} = question_type{z(i)};
                     post_run.rating{2,z(i)} = (x-W*3/8)/(W/4);
                     post_run.rating{3,z(i)} = GetSecs-question_start;
                     rrtt = GetSecs;
