@@ -1,4 +1,4 @@
-function double_text_cell = make_text_PDR(the_text)
+function [k, double_reshaped_text] = make_text_PDR(the_text)
 
 %% load and change file format
 %myFile = fopen('pico_story_kor_ANSI.txt', 'r');
@@ -45,7 +45,6 @@ text_length = numel(myText);
 s_unit = 65; % sentence length
 k = ceil(text_length / s_unit);
 new_text_length = s_unit * k;
-% k = k+1;
 
 for i = 1:k
     while myText(s_unit*(i-1)+1) == ' '
@@ -54,7 +53,7 @@ for i = 1:k
         space_loc = find(doubleText==32);
         space_loc = [0 space_loc];
     end
-    if sum(space_loc == s_unit*i) == 0 % ss_unitÀÇ ¹è¼ö¿¡ ºóÄ­ÀÌ ¤¤¤¤
+    if sum(space_loc == s_unit*i) == 0 % s_unitÀÇ ¹è¼ö¿¡ ºóÄ­ÀÌ ¤¤¤¤
         add_space_n = min(abs(space_loc(find(space_loc < s_unit*i)) - s_unit*i)) ; 
         add_space(1:add_space_n) = ' ';
         myText = [myText(1:s_unit*i - add_space_n) add_space myText(s_unit*i - add_space_n + 1:end)] ; 
@@ -63,7 +62,7 @@ for i = 1:k
         space_loc = find(doubleText==32);
         space_loc = [0 space_loc];
     elseif sum(space_loc == s_unit*i) == 1 % s_unitÀÇ ¹è¼ö¿¡ ºóÄ­ÀÌ ¤·¤·
-        reshaped_Text(i,:) = myText(s_unit*(i-1)+1:s_unit*i);
+            reshaped_Text(i,:) = myText(s_unit*(i-1)+1:s_unit*i);
     end
 end
 
@@ -71,13 +70,4 @@ reshaped_Text;
 
 %% 
 double_reshaped_text = double(reshaped_Text);
-
-for i = 1:ceil(k/2)
-    if i == ceil(k/2)
-        double_text_cell{i} = double_reshaped_text((2*(i-1)+1):end,:);
-    else
-        double_text_cell{i} = double_reshaped_text((2*(i-1)+1):(2*i),:);
-    end
-end
-
 end

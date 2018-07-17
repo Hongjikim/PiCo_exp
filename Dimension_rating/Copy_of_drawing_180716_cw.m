@@ -1,5 +1,3 @@
-function data = dimension_rating(dimension_type)
-
 %%
 % 1) 시작위치가 거기가 아닐텐데..
 % 2) 텍스트 오류
@@ -10,33 +8,6 @@ function data = dimension_rating(dimension_type)
 subject_ID = input('Subject ID?:', 's');
 subject_number = input('Subject number?:');
 
-% save data
-savedir = fullfile(basedir, 'Data_PDR');
-if ~exist(savedir, 'dir')
-    mkdir(savedir);
-end
-
-nowtime = clock;
-subjtime = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
-
-data.subject = subject_number;
-data.datafile = fullfile(savedir, [subjtime, '_', subject_ID, '_subj', sprintf('%.3d', subject_number), '.mat']);
-data.version = 'PICO_v0_04-16-2018_Cocoanlab';
-data.starttime = datestr(clock, 0);
-data.starttime_getsecs = GetSecs;
-
-if ~exist(data.datafile, 'file')
-    disp('The data file already exists.');
-    start_option = input('1:Start from the page you left off, 2:Start from the beginning, 3:Abort');
-end
-
-if start_option==1
-    start_page = numel(data.trajectory_save_page)+1;
-elseif start_option==2
-    start_page = 1;
-elseif start_option==3
-    error(':::::ABORT:::::');
-end
 
 % SETUP: global
 global theWindow W H; % window property
@@ -73,10 +44,14 @@ Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
 basedir = '/Users/cocoanlab/Desktop/PiCo/PiCo/Dimension_rating';  % edit
 cd(basedir); addpath(genpath(basedir));
 
-the_text = 'cyj_1.txt'; % edit
-double_text_cell = make_text_PDR(the_text);
+
+the_text = 'cyj_2.txt'; % edit
+[k, double_reshaped_text] = make_text_PDR(the_text);
 
 sTime = GetSecs;
+
+rec=1;
+rec2=1;
 
 % Set the center of axis
 axis2 = H/1.5;
@@ -86,26 +61,34 @@ y_init = [round(axis1), round(axis2)];
 xc_all = [];
 yc_all = [];
 
-for i = 1:numel(double_text_cell)
-    for j = 1:size(double_text_cell{i},1)
-        TextW{i}(j,1) = Screen(theWindow,'DrawText',double_text_cell{i}(j,:),0,0);
+for i = 1:ceil(k/2)
+    TextW{i} = NaN(2,1);
+    TextW{i}(1) = Screen(theWindow,'DrawText',double_reshaped_text(2*i-1,:),0,0);
+    try
+        TextW{i}(2) = Screen(theWindow,'DrawText',double_reshaped_text(2*i,:),0,0);
+    catch
     end
 end
 Screen(theWindow,'FillRect',bgcolor, window_rect);
 
-for i = start_page:numel(double_text_cell)
-    
-    text = double_text_cell{i};
+for i = 1:ceil(k/2)
+    text = [];
+    text = [text double_reshaped_text(2*i-1,:)];
+    try
+        text = [text double_reshaped_text(2*i,:)];
+    catch
+    end
     
     % loop for lines
-    for line_i = 1:size(double_text_cell{i},1)
+    
+    for line_i = 1:2
         
         ready2 = false;
         
         x_init_ln = round(W/14); % + W/100;
         y_init_ln = y_init(line_i);
         
-        % SetMouse(x_init_ln, y_init_ln); % set mouse at the starting point
+        SetMouse(x_init_ln, y_init_ln); % set mouse at the starting point
         
         xc{line_i} = x_init_ln;
         yc{line_i} = y_init_ln;
@@ -117,11 +100,7 @@ for i = start_page:numel(double_text_cell)
         
         while ~ready2
             
-            if size(double_text_cell{i},1) == 1
-                draw_axis_PDR(axis1, dimension_type);
-            else
-                draw_axis_PDR([axis1 axis2], dimension_type);
-            end
+            draw_axis_PDR([axis1 axis2]);
             
             DrawFormattedText(theWindow, text, W/14 + 10, axis1 - H/20 - 80, 255, 70, 0, 0, 13.8); % 10 = 14.5
             
@@ -146,9 +125,9 @@ for i = start_page:numel(double_text_cell)
                 remove_dot = true;
             end
             
-            % show guide dot
+            
             if ~remove_dot
-                Screen('DrawDots', theWindow, [x_init_ln y_init_ln]', 20, [255 255 0 130], [0 0], 1); 
+                Screen('DrawDots', theWindow, [x_init_ln y_init_ln]', 20, [255 255 0 130], [0 0], 1);  % big orange dot
             end
             
             Screen('DrawDots', theWindow, [x y]', 20, [255 164 0 130], [0 0], 1);  % big orange dot
@@ -190,7 +169,7 @@ for i = start_page:numel(double_text_cell)
                 Screen('Flip',theWindow);
                 %                 WaitSecs(0.5);
                 while true
-                    [x,y,button] = GetMouse;
+                    [x,y,button] = GetMouse
                     if sum(button == [0 1 0]) == 3
                         break
                     end
@@ -200,15 +179,27 @@ for i = start_page:numel(double_text_cell)
             
         end
     end
-    
-    data.trajectory_save_page{i} = [xc;yc];
-    
-    save(data.datafile, 'data');
-    
+    %
     xc_all = [xc_all xc];
     yc_all = [yc_all yc];
+    %data.trajectory_save = [xc_all; yc_all];
     
+    % save(data.datafile, 'data');
 end
+
+savedir = fullfile(basedir, 'Data_PDR');
+if ~exist(savedir, 'dir')
+    mkdir(savedir);
+end
+
+nowtime = clock;
+subjtime = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
+
+data.subject = subject_number;
+data.datafile = fullfile(savedir, [subjtime, '_', subject_ID, '_subj', sprintf('%.3d', subject_number), '.mat']);
+data.version = 'PICO_v0_04-16-2018_Cocoanlab';
+data.starttime = datestr(clock, 0);
+data.starttime_getsecs = GetSecs;
 
 data.trajectory_save = [xc_all; yc_all];
 
@@ -235,14 +226,6 @@ disp('Data SAVED')
 for i = 1:16
     subplot(4,4,i)
     plot(data.trajectory_save{1,i}, -data.trajectory_save{2,i})
-    title([num2str(i), '번째 문장'])
-    xlim([100 1300])
-%     if round(i/2) == i/2
-%         ylim([500 700])
-%     else
-%         ylim([200 400])
-%     end
-    
 end
 
 %

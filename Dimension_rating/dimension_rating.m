@@ -9,9 +9,14 @@ function data = dimension_rating(dimension_type)
 %%
 subject_ID = input('Subject ID?:', 's');
 subject_number = input('Subject number?:');
+start_option = 2;
+
+% from generate_ts.. use this to load all the story text for dimensions
+% subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
+% stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
 
 % save data
-savedir = fullfile(basedir, 'Data_PDR');
+savedir = fullfile(pwd, 'Data_PDR');
 if ~exist(savedir, 'dir')
     mkdir(savedir);
 end
@@ -25,9 +30,10 @@ data.version = 'PICO_v0_04-16-2018_Cocoanlab';
 data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
 
-if ~exist(data.datafile, 'file')
+if exist(data.datafile, 'file')
+    load(data.datafile);
     disp('The data file already exists.');
-    start_option = input('1:Start from the page you left off, 2:Start from the beginning, 3:Abort');
+    start_option = input('1:Start from the page you left off, 2:Start from the beginning, 3:Abort  ');
 end
 
 if start_option==1
@@ -60,29 +66,28 @@ window_rect = [0 0 window_info.width window_info.height]/window_ratio;
 W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
 textH = H/2.3;
-
+axis_w = W/1.55;
+axis_h = H/10;
 
 Screen('Preference', 'SkipSyncTests', 1);
 [theWindow, rect]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);
 Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-% font ='NanumBarunGothic';
+% font = 'NanumBarunGothic';
 % Screen('TextFont', theWindow, font);
 % Screen('TextSize', windowPtr, fontsize);
-% HideCursor;
+HideCursor;
 
-basedir = '/Users/cocoanlab/Desktop/PiCo/PiCo/Dimension_rating';  % edit
-cd(basedir); addpath(genpath(basedir));
-
-the_text = 'cyj_1.txt'; % edit
+the_text = 'cyj_2.txt'; % edit
 double_text_cell = make_text_PDR(the_text);
 
 sTime = GetSecs;
 
 % Set the center of axis
-axis2 = H/1.5;
-axis1 = H/3;
+y_zero{1} = round(H/3);
+y_zero{2} = round(H/1.5);
+y_interval = y_zero{2}-y_zero{1};
+x_zero = round(W/14);
 
-y_init = [round(axis1), round(axis2)];
 xc_all = [];
 yc_all = [];
 
@@ -102,28 +107,34 @@ for i = start_page:numel(double_text_cell)
         
         ready2 = false;
         
-        x_init_ln = round(W/14); % + W/100;
-        y_init_ln = y_init(line_i);
+        if i == 1 && line_i == 1
+            x_init_ln = x_zero;
+            y_init_ln = y_zero{1};
+        else
+            y_init_ln = data.y_previous;
+        end
         
         % SetMouse(x_init_ln, y_init_ln); % set mouse at the starting point
         
         xc{line_i} = x_init_ln;
         yc{line_i} = y_init_ln;
         
-        %         instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
-        %         DrawFormattedText(theWindow, instruction, W/14, H/4, 255);
+        instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
+        
         
         remove_dot = false;
         
         while ~ready2
             
             if size(double_text_cell{i},1) == 1
-                draw_axis_PDR(axis1, dimension_type);
+                draw_axis_PDR(y_zero{1}, dimension_type, 'width', TextW{i});
             else
-                draw_axis_PDR([axis1 axis2], dimension_type);
+                draw_axis_PDR([y_zero{1} y_zero{2}], dimension_type, 'width', TextW{i});
             end
             
-            DrawFormattedText(theWindow, text, W/14 + 10, axis1 - H/20 - 80, 255, 70, 0, 0, 13.8); % 10 = 14.5
+            DrawFormattedText(theWindow, instruction, W/14, H/4, 255);
+            DrawFormattedText(theWindow, text(1,:), x_zero + 10, y_zero{1} - axis_h - 20, 255);
+            DrawFormattedText(theWindow, text(2,:), x_zero + 10, y_zero{2} - axis_h - 20, 255);
             
             [x,y,button] = GetMouse(theWindow);
             
@@ -131,14 +142,24 @@ for i = start_page:numel(double_text_cell)
             y = round(y);
             
             % prevent moving further left than start point
-            if x < x_init_ln
-                x = x_init_ln; SetMouse(x_init_ln,y);
-            elseif x > x_init_ln + W/1.6 + 50
-                x = x_init_ln + W/1.6 + 50; SetMouse(x_init_ln + W/1.6 + 50,y);
-            elseif y > y_init_ln + H/10
-                y = y_init_ln + H/10; SetMouse(x,y);
-            elseif y < y_init_ln - H/10
-                y = y_init_ln - H/10; SetMouse(x,y);
+            if x < x_zero
+                x = x_zero; SetMouse(x_zero,y);
+            elseif x > x_zero + TextW{i}(line_i) + 30
+                x = x_zero + TextW{i}(line_i) + 30; SetMouse(x_zero + TextW{i}(line_i) + 30,y);
+            end
+            
+            if strcmp(dimension_type, 'valence')
+                if y > y_zero{line_i} + axis_h
+                    y = y_zero{line_i} + axis_h; SetMouse(x,y);
+                elseif y < y_zero{line_i} - axis_h
+                    y = y_zero{line_i} - axis_h; SetMouse(x,y);
+                end
+            else
+                if y < y_zero{line_i} - axis_h
+                    y = y_zero{line_i} - axis_h; SetMouse(x,y);
+                elseif y > y_zero{line_i}
+                    y = y_zero{line_i}; SetMouse(x,y);
+                end
             end
             
             % remove guide dot
@@ -181,24 +202,30 @@ for i = start_page:numel(double_text_cell)
             
             Screen('Flip',theWindow);
             
-            if (x>(x_init_ln + W/1.55)) && (numel(xc{line_i}) > round(TextW{i}(line_i))*.9)
+            if (x>(x_init_ln + TextW{i}(line_i))) && (numel(xc{line_i}) > round(TextW{i}(line_i)))
                 Screen('DrawDots', theWindow, [x y]', 20, [255 0 0 0], [0 0], 1);  % Feedback
                 if line_i > 1
                     Screen('DrawDots', theWindow, [xc{1} yc{1}]', 5, [255 0 0], [0 0], 1);  %red line
                 end
                 Screen('DrawDots', theWindow, [xc{line_i} yc{line_i}]', 5, [255 0 0], [0 0], 1);  %red line
                 Screen('Flip',theWindow);
-                %                 WaitSecs(0.5);
-                while true
-                    [x,y,button] = GetMouse;
-                    if sum(button == [0 1 0]) == 3
-                        break
-                    end
-                end
+                %WaitSecs(0.5);
+%                 while true
+%                     [x,y,button] = GetMouse;
+%                     if sum(button == [0 1 0]) == 3
+%                         break
+%                     end
+%                 end
                 ready2 = true;
+                if line_i == 1
+                    y_previous = y + y_interval;
+                else
+                    y_previous = y - y_interval;
+                end
             end
             
         end
+        data.y_previous = y_previous;
     end
     
     data.trajectory_save_page{i} = [xc;yc];
@@ -232,21 +259,23 @@ disp('Data SAVED')
 % figure; plot(a(:,1), a(:,2)); hold on
 % plot(b(:,1), b(:,2))
 
-for i = 1:16
-    subplot(4,4,i)
-    plot(data.trajectory_save{1,i}, -data.trajectory_save{2,i})
-    title([num2str(i), '번째 문장'])
-    xlim([100 1300])
-%     if round(i/2) == i/2
-%         ylim([500 700])
-%     else
-%         ylim([200 400])
-%     end
-    
-end
+% for i = 1:16
+%     subplot(4,4,i)
+%     plot(data.trajectory_save{1,i}, -data.trajectory_save{2,i})
+%     title([num2str(i), '번째 문장'])
+%     xlim([100 1300])
+% %     if round(i/2) == i/2
+% %         ylim([500 700])
+% %     else
+% %         ylim([200 400])
+% %     end
+%     
+% end
 
 %
 
 KbStrokeWait;
 sca;
 Screen('CloseAll');
+
+end
