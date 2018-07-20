@@ -51,6 +51,7 @@ for j = 1:length(comma_loc)
     if sum(comma_loc(j) + 1 == space_loc) == 0
         disp('*** error in contents! ***')
         fprintf('쉼표 위치: %s \n', myText(comma_loc(j)-2:comma_loc(j)))
+        fprintf('%s \n', fname)
         sca
         break
     end
@@ -58,6 +59,7 @@ for j = 1:length(comma_loc)
         if sum(ending_loc(k) + 1 == space_loc) == 0
             disp ('*** error in contents! ***')
             fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
+            fprintf('%s \n', fname)
             sca
             return
         end

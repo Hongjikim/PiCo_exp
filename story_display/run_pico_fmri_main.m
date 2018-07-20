@@ -6,7 +6,7 @@
 % words_data
 
 %%
-cd('/Users/hongji/Dropbox/PiCo_git/story_display'); 
+cd('/Users/hongji/Dropbox/PiCo_git/story_display'); %edit
 
 ts= pico_fmri_generate_ts;  %error 나타나는 위치 질문
 
@@ -14,7 +14,7 @@ ts= pico_fmri_generate_ts;  %error 나타나는 위치 질문
 pico_fmri_resting('testmode');
 
 %% run 1
-% run_i = 1;
+% run_i = 1;s
 %pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
 pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
 

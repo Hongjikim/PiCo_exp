@@ -23,9 +23,9 @@ end
 
 nowtime = clock;
 subjtime = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
-
+   
 data.subject = subject_number;
-data.datafile = fullfile(savedir, [subjtime, '_', subject_ID, '_subj', sprintf('%.3d', subject_number), '.mat']);
+data.datafile = fullfile(savedir, [subjtime, '_', subject_ID, '_', dimension_type, '_subj', sprintf('%.3d', subject_number), '.mat']);
 data.version = 'PICO_v0_04-16-2018_Cocoanlab';
 data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
@@ -55,7 +55,7 @@ blue = [0 85 169];
 orange = [255 164 0];
 bgcolor = 100;
 
-window_ratio = 1.1;
+window_ratio = 1.5;
 
 screens = Screen('Screens');
 window_num = screens(end);
@@ -67,7 +67,7 @@ W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
 textH = H/2.3;
 axis_w = W/1.55;
-axis_h = H/10;
+axis_h = H/9.5;
 
 Screen('Preference', 'SkipSyncTests', 1);
 [theWindow, rect]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);
@@ -77,14 +77,14 @@ Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
 % Screen('TextSize', windowPtr, fontsize);
 HideCursor;
 
-the_text = 'cyj_2.txt'; % edit
+the_text = 'cwk_1.txt'; % edit
 double_text_cell = make_text_PDR(the_text);
 
 sTime = GetSecs;
 
 % Set the center of axis
-y_zero{1} = round(H/3);
-y_zero{2} = round(H/1.5);
+y_zero{1} = round(H/4);
+y_zero{2} = round(H/2);
 y_interval = y_zero{2}-y_zero{1};
 x_zero = round(W/14);
 
@@ -119,7 +119,11 @@ for i = start_page:numel(double_text_cell)
         xc{line_i} = x_init_ln;
         yc{line_i} = y_init_ln;
         
-        instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
+        if strcmp(dimension_type, 'valence')
+            instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
+        elseif strcmp(dimension_type, 'self_relevance')
+            instruction = double('아래 글을 읽고, 자기관련도를 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 나와 관련 있음)');
+        end
         
         
         remove_dot = false;
@@ -132,7 +136,7 @@ for i = start_page:numel(double_text_cell)
                 draw_axis_PDR([y_zero{1} y_zero{2}], dimension_type, 'width', TextW{i});
             end
             
-            DrawFormattedText(theWindow, instruction, W/14, H/4, 255);
+            DrawFormattedText(theWindow, instruction, W/14, H/10, 0);
             DrawFormattedText(theWindow, text(1,:), x_zero + 10, y_zero{1} - axis_h - 20, 255);
             DrawFormattedText(theWindow, text(2,:), x_zero + 10, y_zero{2} - axis_h - 20, 255);
             
@@ -193,8 +197,8 @@ for i = start_page:numel(double_text_cell)
                 end
             end
             
-            disp([x,y]); %display the coordinates
-            %Screen('DrawDots', theWindow, [x y]', 20, [255 164 0 130], [0 0], 1);  % big orange dot
+            % disp([x,y]); %display the coordinates
+            % Screen('DrawDots', theWindow, [x y]', 20, [255 164 0 130], [0 0], 1);  % big orange dot
             if line_i > 1
                 Screen('DrawDots', theWindow, [xc{1} yc{1}]', 5, [255 0 0], [0 0], 1);  %red line
             end
@@ -259,16 +263,16 @@ disp('Data SAVED')
 % figure; plot(a(:,1), a(:,2)); hold on
 % plot(b(:,1), b(:,2))
 
-% for i = 1:16
+% for i = 1:14
 %     subplot(4,4,i)
 %     plot(data.trajectory_save{1,i}, -data.trajectory_save{2,i})
 %     title([num2str(i), '번째 문장'])
 %     xlim([100 1300])
-% %     if round(i/2) == i/2
-% %         ylim([500 700])
-% %     else
-% %         ylim([200 400])
-% %     end
+%     if round(i/2) == i/2
+%         ylim([500 700])
+%     else
+%         ylim([-1000 0])
+%     end
 %     
 % end
 

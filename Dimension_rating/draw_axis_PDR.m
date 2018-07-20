@@ -38,7 +38,7 @@ for i = 1:length(b)
     % starting_point (coordinate a,b -- the number of b equals the number of lines)
     a = round(W/14); %70;
     w = axis_w(i); %1150; % width of line (horizontal length == length of x axis)
-    l = H/7; %H/10; %100; % length of line (vertical length == height of y axis)
+    l = H/9.5; %H/10; %100; % length of line (vertical length == height of y axis)
     a_w= W/100; %10; % arrow width
     % How many lines?  %length
     

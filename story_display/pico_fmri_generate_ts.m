@@ -1,6 +1,6 @@
 function [ts] = pico_fmri_generate_ts
 
-datdir = '/Users/hongji/Dropbox/PiCo_git/data'; %'/Users/clinpsywoo/Dropbox/github/PiCo/data';
+datdir = '/Users/hongji/Dropbox/PiCo_git/data';  % edit 'data'
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 

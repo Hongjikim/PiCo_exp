@@ -140,7 +140,6 @@ try
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
-    Screen('TextSize', theWindow, fontsize);
     if ~testmode, HideCursor; end
     
     
@@ -202,6 +201,8 @@ try
             
         else
             % Start second display
+            fontsize = 42;
+            Screen('TextSize', theWindow, fontsize);
             start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
@@ -224,6 +225,8 @@ try
             data.dat{story_num}{word_i}.msg = char(msg);
             data.dat{story_num}{word_i}.total_duration = data.trial_sequence{story_num}{word_i}.total_duration;
             data.dat{story_num}{word_i}.word_duration = data.trial_sequence{story_num}{word_i}.word_duration;
+            fontsize = 60;
+            Screen('TextSize', theWindow, fontsize);
             DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             
@@ -243,7 +246,7 @@ try
                 
                 data.dat{story_num}{word_i}.blank_end_time = GetSecs;
                 
-                % 최대 시간 정하기 (일정하고) 
+                % 최대 시간 정하기 (일정하고)
                 if sum(word_i == data.trial_sequence{story_num}{1}.rating_period_loc) == 1
                     rT = 8;
                     duration = duration + rT;
@@ -252,8 +255,8 @@ try
                     [data.taskdat{story_num}{e_i}.emotion_word, data.taskdat{story_num}{e_i}.emotion_time, ...
                         data.taskdat{story_num}{e_i}.emotion_trajectory] = emotion_rating(data.taskdat{story_num}{e_i}.emotion_starttime); % sub-function
                     waitsec_fromstarttime(sTime, duration);
-                % duration에 rating시간 포함
-                % emotion_Rating에 시간제한 넣기 
+                    % duration에 rating시간 포함
+                    % emotion_Rating에 시간제한 넣기
                 end
                 
             end
@@ -296,13 +299,15 @@ try
         
         nTime = GetSecs;
         while GetSecs - nTime <5
+            fontsize = 42;
+            Screen('TextSize', theWindow, fontsize);
             run_end_msg = double('이번 세션이 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
             DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
         end
         
         data = pico_post_run_survey(data, story_num); % post_run questionnaire after each FT
-       
+        
         save(data.datafile, 'data', '-append');
         
         
@@ -359,6 +364,8 @@ while GetSecs - resting_sTime < 150
     for i = 1:2
         while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
             data.resting{story_num}.start_Sampling{i} = GetSecs;
+            fontsize = 42;
+            Screen('TextSize', theWindow, fontsize);
             FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
             DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
@@ -379,6 +386,8 @@ end
 data.resting{story_num}.fixation_end_time = GetSecs;
 
 while GetSecs - data.resting{story_num}.fixation_end_time <5
+    fontsize = 42;
+    Screen('TextSize', theWindow, fontsize);
     end_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
     DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
     Screen('Flip', theWindow);
@@ -506,6 +515,8 @@ for i = 1:numel(theta)
 end
 % Choice letter
 for i = 1:numel(choice)
+    fontsize = 28;
+    Screen('TextSize', theWindow, fontsize);
     DrawFormattedText(theWindow, double(choice{i}), 'center', 'center', white, [],[],[],[],[],xy_word(i,:));
 end
 
@@ -537,10 +548,12 @@ while(1)
     elseif x > W*2/3, x = W*2/3;
     end
     
+    fontsize = 32;
     Screen('TextSize', theWindow, fontsize);
     Screen(theWindow,'FillRect',bgcolor, window_rect);
     Screen('DrawLines',theWindow, xy, 5, 255);
-    DrawFormattedText(theWindow, intro_prompt1,'center', H/4, white);
+    
+    DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
     DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
     % Draw scale letter
     DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
@@ -597,43 +610,65 @@ post_run.start_time = GetSecs;
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
 save(data.datafile, 'data', '-append');
-    
+
 % QUESTION
-    title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
-        '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
-        '중립', '', '현재', '', '중립', '';
-        '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
-    
-    linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
-        H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
-    linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
-        H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
-    rng('shuffle');
-    z = randperm(5);
-    
-   
-    for i = 1:(numel(title(1,:))-1)
-        if mod(z(i),2) % odd number, valence, time, safe&threat
-            question_start = GetSecs;
-            SetMouse(W/2, H/2);
+title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
+    '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
+    '중립', '', '현재', '', '중립', '';
+    '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
+
+linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
+linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
+rng('shuffle');
+z = randperm(5);
+
+
+for i = 1:(numel(title(1,:))-1)
+    if mod(z(i),2) % odd number, valence, time, safe&threat
+        question_start = GetSecs;
+        SetMouse(W/2, H/2);
+        
+        while(1)
+            % Track Mouse coordinate
+            [mx, ~, button] = GetMouse(theWindow);
             
-            while(1)
-                % Track Mouse coordinate
-                [mx, ~, button] = GetMouse(theWindow);
+            x = mx;
+            y = H/2;
+            if x < W/4, x = W/4;
+            elseif x > W*3/4, x = W*3/4;
+            end
+            fontsize = 32;
+            Screen('TextSize', theWindow, fontsize);
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            Screen('DrawLines',theWindow, linexy1, 3, 255);
+            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
+            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
+            
+            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            Screen('Flip', theWindow);
+            
+            if button(1)
+                post_run.rating{1,z(i)} = question_type{z(i)};
+                post_run.rating{2,z(i)} = (x-W/2)/(W/4);
+                post_run.rating{3,z(i)} = GetSecs-question_start;
+                rrtt = GetSecs;
                 
-                x = mx;
-                y = H/2;
-                if x < W/4, x = W/4;
-                elseif x > W*3/4, x = W*3/4;
-                end
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 Screen('DrawLines',theWindow, linexy1, 3, 255);
                 DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
+                
                 DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
                 DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
@@ -641,50 +676,51 @@ save(data.datafile, 'data', '-append');
                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
                 
-                Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                
-                if button(1)
-                    post_run.rating{1,z(i)} = question_type{z(i)};
-                    post_run.rating{2,z(i)} = (x-W/2)/(W/4);
-                    post_run.rating{3,z(i)} = GetSecs-question_start;
-                    rrtt = GetSecs;
-                    
-                    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                    Screen('DrawLines',theWindow, linexy1, 3, 255);
-                    DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                    
-                    DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-                    
-                    Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-                    Screen('Flip', theWindow);
-%                     if USE_EYELINK
-%                         Eyelink('Message','Rest Question response');
-%                     end
-                    waitsec_fromstarttime(rrtt, 0.5);
-                    post_run.rating{4,z(i)} = GetSecs;
-                    break;
-                end
+                %                     if USE_EYELINK
+                %                         Eyelink('Message','Rest Question response');
+                %                     end
+                waitsec_fromstarttime(rrtt, 0.5);
+                post_run.rating{4,z(i)} = GetSecs;
+                break;
             end
+        end
+        
+    else   % even number, self-relevance, vividness
+        question_start = GetSecs;
+        SetMouse(W*3/8, H/2);
+        
+        while(1)
+            % Track Mouse coordinate
+            [mx, ~, button] = GetMouse(theWindow);
             
-        else   % even number, self-relevance, vividness
-            question_start = GetSecs;
-            SetMouse(W*3/8, H/2);
+            x = mx;
+            y = H/2;
+            if x < W*3/8, x = W*3/8;
+            elseif x > W*5/8, x = W*5/8;
+            end
+            fontsize = 32;
+            Screen('TextSize', theWindow, fontsize);
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            Screen('DrawLines',theWindow, linexy2, 3, 255);
+            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
             
-            while(1)
-                % Track Mouse coordinate
-                [mx, ~, button] = GetMouse(theWindow);
-                
-                x = mx;
-                y = H/2;
-                if x < W*3/8, x = W*3/8;
-                elseif x > W*5/8, x = W*5/8;
-                end
+            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
+            
+            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            Screen('Flip', theWindow);
+            
+            if button(1)
+                post_run.rating{1,z(i)} = question_type{z(i)};
+                post_run.rating{2,z(i)} = (x-W*3/8)/(W/4);
+                post_run.rating{3,z(i)} = GetSecs-question_start;
+                rrtt = GetSecs;
                 
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 Screen('DrawLines',theWindow, linexy2, 3, 255);
@@ -697,46 +733,27 @@ save(data.datafile, 'data', '-append');
                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
                 
-                Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+                Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                
-                if button(1)
-                    post_run.rating{1,z(i)} = question_type{z(i)};
-                    post_run.rating{2,z(i)} = (x-W*3/8)/(W/4);
-                    post_run.rating{3,z(i)} = GetSecs-question_start;
-                    rrtt = GetSecs;
-                    
-                    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                    Screen('DrawLines',theWindow, linexy2, 3, 255);
-                    DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                    
-                    DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-                    
-                    Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
-                    Screen('Flip', theWindow);
-%                     if USE_EYELINK
-%                         Eyelink('Message','Rest Question response');
-%                     end
-                    waitsec_fromstarttime(rrtt, 0.5);
-                    post_run.rating{4,z(i)} = GetSecs;
-                    break;
-                end
+                %                     if USE_EYELINK
+                %                         Eyelink('Message','Rest Question response');
+                %                     end
+                waitsec_fromstarttime(rrtt, 0.5);
+                post_run.rating{4,z(i)} = GetSecs;
+                break;
             end
         end
     end
-    WaitSecs(.1);
-    
-    post_run.end_time = GetSecs;
+end
 
-    data.postrunQ{story_num} = post_run ;
+WaitSecs(.1);
+
+post_run.end_time = GetSecs;
+
+data.postrunQ{story_num} = post_run ;
 
 save(data.datafile, 'data', '-append');
-    
+
 end
 
 
