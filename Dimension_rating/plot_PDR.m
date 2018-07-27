@@ -6,7 +6,7 @@
 %  바이올린 플랏
  
 %% vis one person's data
-cd('/Users/cocoan/Desktop/PiCo/Dimension_rating/Data_PDR');
+cd('/Users/hongji/Dropbox/PiCo_git/Dimension_rating/Data_PDR');
 fnames_sr = filenames('*self*relevance*');
 fnames_val = filenames('*alence*');
 
@@ -43,12 +43,19 @@ for ii = 1:numel(fnames_val)
     for i = 2:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-960; end
     
     hold on;
-    plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 1.5);
+    plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 1);
     plot2.Color(4) = 0.3; 
     ylabel('Valence');
+    
+    all_y_dat_val{ii} = cat(1,data.trajectory_save{4,:}) ;
+    
 end
 
-
+all_y_cat_dat_val = cat(1,all_y_dat_val{1,:}) ; 
+mean_y_val = - mean(all_y_cat_dat_val);
+hold on;
+plot([0 20000], [mean_y_val mean_y_val], '--b', 'linewidth', 2.0); % 'Color', [1 0 0]) ; 
+    
 box off;
 set(gcf, 'color', 'w');
 set(gca, 'fontsize', 20, 'xlim', [0 18500], 'ylim', [-250 250], 'linewidth', 1.2, 'tickdir', 'out', 'ticklength', [.005 .005]);
@@ -86,11 +93,18 @@ for ii = 1:numel(fnames_sr)
     
     
     hold on;
-    plot1 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth',1.5);
+    plot1 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth',1);
     plot1.Color(4) = 0.3; 
     ylabel('Self-relevance');
     
+    all_y_data_sr{ii} = cat(1,data.trajectory_save{4,:})
+    
 end
+
+all_y_data_cat_sr = cat(1,all_y_data_sr{1,:}) ; 
+mean_y_sr = - mean(all_y_data_cat_sr);
+hold on;
+plot([0 20000], [mean_y_sr mean_y_sr], '--b', 'linewidth', 2.0); %'Color', [1 0 0]) ; 
 
 
 
@@ -142,6 +156,8 @@ cols = [8,81,156
 
 boxplot_wani_2016(y_all, 'violin', 'refline', 0, 'colors', cols, 'boxlinewidth', .1, 'box_trans', .8);
 set(gcf, 'Position',  [382 783 1348 472]);
+hold on;
+plot([0 20000], [mean_y_val mean_y_val], '--b', 'linewidth', 2.0); %'Color', [1 0 0]) ; 
 
 % title('Valence of 10 subjects')
 
@@ -194,6 +210,9 @@ cols = [8,81,156
 boxplot_wani_2016(y_all, 'violin', 'refline', 0, 'colors', cols, 'boxlinewidth', .1, 'box_trans', .8);
 set(gcf, 'Position',  [382 783 1348 472]);
 % title('Self-relevance of 10 subjects')
+
+hold on;
+plot([0 20000], [mean_y_sr mean_y_sr], '--b', 'linewidth', 2.0); %'Color', [1 0 0]) ; 
 
 % 
 % cols = [1 0.5 0.5

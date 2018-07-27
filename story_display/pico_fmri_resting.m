@@ -82,7 +82,7 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color window_ratio % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color % lb tb recsize barsize rec; % rating scale
 
 % Screen setting
 bgcolor = 100;
@@ -122,13 +122,28 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, rect]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);%[0 0 2560/2 1440/2]
+    [theWindow, ~]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize);
-    if ~testmode, HideCursor; end
+    if ~testmode, HideCursor; end 
     
+    %% SETUP: Eyelink
+    % need to be revised when the eyelink is here.
+    if USE_EYELINK
+        edf_filename = ['E_F' sid(5:end), '_' sprintf('%.1d', ft_num)]; % name should be equal or less than 8 
+        % E_F for Free_thinking
+        edfFile = sprintf('%s.EDF', edf_filename);
+        eyelink_main(edfFile, 'Init');
+        
+        status = Eyelink('Initialize');
+        if status
+            error('Eyelink is not communicating with PC. Its okay baby.');
+        end
+        Eyelink('Command', 'set_idle_mode');
+        waitsec_fromstarttime(GetSecs, .5);
+    end
     
     %% FREE THINKING START
     
@@ -169,7 +184,22 @@ try
     waitsec_fromstarttime(data.runscan_starttime, 10); % For disdaq
     
     
-    %% START FIRST STORY
+    %% EYELINK AND BIOPAC START
+            
+            if USE_EYELINK
+                Eyelink('StartRecording');
+                data.eyetracker_starttime = GetSecs; % eyelink timestamp
+                Eyelink('Message','FT Run start');
+            end
+            
+            if USE_BIOPAC
+                data.biopac_starttime = GetSecs; % biopac timestamp
+                BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+                waitsec_fromstarttime(data.biopac_starttime, 0.8);
+                BIOPAC_trigger(ljHandle, biopac_channel, 'off');
+            end
+            
+            %% START FREE THINKING
     
     % 6 seconds for being ready
     start_msg = double('화면에 + 표시가 나타나면, 자유 생각을 시작하세요. \n + 표시가 사라질 때 마다 지시문에 답변을 해주세요.') ;
@@ -185,7 +215,6 @@ try
     
     
     data.freethinking_start_time{ft_num} = GetSecs;
-    sTime = data.freethinking_start_time{ft_num};
     
     
     save(data.datafile, 'data', '-append');
@@ -194,6 +223,7 @@ try
     data = free_thinking(data, ft_num); %free thinking without story!
     save(data.datafile, 'data', '-append');
     
+        
     nTime = GetSecs;
     while GetSecs - nTime <5
         run_end_msg = double('이번 세션이 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
@@ -206,6 +236,24 @@ try
     
     data = pico_post_run_survey_resting(data, ft_num); %free thinking for story!
     save(data.datafile, 'data', '-append');
+    
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    run_END_msg = '잘하셨습니다. 잠시 대기해 주세요.';
+    DrawFormattedText(theWindow, run_END_msg, 'center', textH, white);
+    Screen('Flip', theWindow);
+    
+    save(data.datafile, 'data', '-append');
+    
+    if USE_EYELINK
+        Eyelink('Message','Story Run END');
+        eyelink_main(edfFile, 'Shutdown');
+    end
+    if USE_BIOPAC
+        data.biopac_endtime = GetSecs; % biopac timestamp
+        BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+        waitsec_fromstarttime(data.biopac_endtime, 0.1);
+        BIOPAC_trigger(ljHandle, biopac_channel, 'off');
+    end
     
     KbStrokeWait;
     sca;

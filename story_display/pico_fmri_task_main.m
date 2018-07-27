@@ -82,7 +82,7 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color window_ratio rT % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color rT % lb tb recsize barsize rec; % rating scale
 
 % Screen setting
 bgcolor = 100;
@@ -142,6 +142,21 @@ try
     Screen('TextFont', theWindow, font);
     if ~testmode, HideCursor; end
     
+    %% SETUP: Eyelink
+    % need to be revised when the eyelink is here.
+    if USE_EYELINK
+        edf_filename = ['E_S' sid(5:end), '_' sprintf('%.1d', run_n)]; % name should be equal or less than 8
+        % E_S for STORY
+        edfFile = sprintf('%s.EDF', edf_filename);
+        eyelink_main(edfFile, 'Init');
+        
+        status = Eyelink('Initialize');
+        if status
+            error('Eyelink is not communicating with PC. Its okay baby.');
+        end
+        Eyelink('Command', 'set_idle_mode');
+        waitsec_fromstarttime(GetSecs, .5);
+    end
     
     %% STORY START
     for story_num = 1:2
@@ -160,7 +175,7 @@ try
                 
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-                DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
+                DrawFormattedText(theWindow, ready_prompt,'center', textH, white); %'center', 'textH'
                 Screen('Flip', theWindow);
                 
             end
@@ -184,6 +199,20 @@ try
             
             waitsec_fromstarttime(data.runscan_starttime, 10); % For disdaq
             
+            %% EYELINK AND BIOPAC START
+            
+            if USE_EYELINK
+                Eyelink('StartRecording');
+                data.eyetracker_starttime = GetSecs; % eyelink timestamp
+                Eyelink('Message','Story Run start');
+            end
+            
+            if USE_BIOPAC
+                data.biopac_starttime = GetSecs; % biopac timestamp
+                BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+                waitsec_fromstarttime(data.biopac_starttime, 0.8);
+                BIOPAC_trigger(ljHandle, biopac_channel, 'off');
+            end
             
             %% START FIRST STORY
             
@@ -233,10 +262,13 @@ try
             duration = duration + data.trial_sequence{story_num}{word_i}.word_duration;
             
             waitsec_fromstarttime(sTime, duration);
+            if USE_EYELINK
+                Eyelink('Message','story word');
+            end
             
             data.dat{story_num}{word_i}.text_end_time = GetSecs;
             if ~strcmp(data.trial_sequence{story_num}{word_i}.word_type, 'words')
-                DrawFormattedText(theWindow, ' ', 'center', 'center', text_color);
+                Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 Screen('Flip', theWindow);
                 
                 duration = duration + data.trial_sequence{story_num}{word_i}.total_duration ...
@@ -246,7 +278,7 @@ try
                 
                 data.dat{story_num}{word_i}.blank_end_time = GetSecs;
                 
-                % 최대 시간 정하기 (일정하고)
+                % 최대 시간 정하기
                 if sum(word_i == data.trial_sequence{story_num}{1}.rating_period_loc) == 1
                     rT = 8;
                     duration = duration + rT;
@@ -255,8 +287,6 @@ try
                     [data.taskdat{story_num}{e_i}.emotion_word, data.taskdat{story_num}{e_i}.emotion_time, ...
                         data.taskdat{story_num}{e_i}.emotion_trajectory] = emotion_rating(data.taskdat{story_num}{e_i}.emotion_starttime); % sub-function
                     waitsec_fromstarttime(sTime, duration);
-                    % duration에 rating시간 포함
-                    % emotion_Rating에 시간제한 넣기
                 end
                 
             end
@@ -269,7 +299,7 @@ try
         data.loop_end_time{story_num} = GetSecs;
         save(data.datafile, 'data', '-append');
         
-        while GetSecs - sTime < 5
+        while GetSecs - data.loop_end_time{story_num} < 5
             % when the story is done, wait for 5 seconds. (in Blank)
         end
         
@@ -277,14 +307,15 @@ try
         [data.taskdat{story_num}{3}.emotion_word, data.taskdat{story_num}{3}.emotion_time, ...
             data.taskdat{story_num}{3}.emotion_trajectory] = emotion_rating(data.taskdat{story_num}{3}.emotion_starttime); % sub-function
         
-        while GetSecs - sTime < 2
+        while GetSecs - data.taskdat{story_num}{3}.emotion_time < 2 + rT
         end
         
         data.taskdat{story_num}{4}.concent_starttime = GetSecs;  % rating start timestamp
         [data.taskdat{story_num}{4}.concentration, data.taskdat{story_num}{4}.concent_time, ...
             data.taskdat{story_num}{4}.concent_trajectory] = concent_rating(data.taskdat{story_num}{4}.concent_starttime); % sub-function
         
-        while GetSecs - sTime < 5
+        sTime_3 = GetSecs;
+        while GetSecs - sTime_3 < 5
         end
         
         fixation_point = double('+') ;
@@ -293,15 +324,31 @@ try
         
         waitsec_fromstarttime(data.runscan_starttime, 320); % flexible time (maximum 300 sec of story)
         
+        if USE_BIOPAC % resting start trigger (after 320 buffer time)
+            BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+            waitsec_fromstarttime(GetSecs, 0.5);
+            BIOPAC_trigger(ljHandle, biopac_channel, 'off');
+        end
+        
+        waitsec_fromstarttime(GetSecs, .1)
+        
+        if USE_EYELINK
+            Eyelink('Message','Rest start');
+        end
+        
         data = story_free(data, story_num); %free thinking for story!
         
         save(data.datafile, 'data', '-append');
+        
+        if USE_EYELINK
+            Eyelink('Message','Rest end');
+        end
         
         nTime = GetSecs;
         while GetSecs - nTime <5
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
-            run_end_msg = double('이번 세션이 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
+            run_end_msg = double('이번 이야기가 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
             DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
         end
@@ -310,8 +357,25 @@ try
         
         save(data.datafile, 'data', '-append');
         
-        
-        
+    end
+    
+    %% RUN END MESSAGE
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    run_end_msg = '잘하셨습니다. 잠시 대기해 주세요.';
+    DrawFormattedText(theWindow, run_end_msg, 'center', textH, white);
+    Screen('Flip', theWindow);
+    
+    save(data.datafile, 'data', '-append');
+    
+    if USE_EYELINK
+        Eyelink('Message','Story Run END');
+        eyelink_main(edfFile, 'Shutdown');
+    end
+    if USE_BIOPAC
+        data.biopac_endtime = GetSecs; % biopac timestamp
+        BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+        waitsec_fromstarttime(data.biopac_endtime, 0.1);
+        BIOPAC_trigger(ljHandle, biopac_channel, 'off');
     end
     
     save(data.datafile, 'data', '-append');
@@ -330,12 +394,9 @@ catch err
     for i = 1:numel(err.stack)
         disp(err.stack(i));
     end
-    %     fclose(t);
-    %     fclose(r);  % Q??
     abort_experiment('error');
     
 end
-
 end
 
 
@@ -515,7 +576,7 @@ for i = 1:numel(theta)
 end
 % Choice letter
 for i = 1:numel(choice)
-    fontsize = 28;
+    fontsize = 36;
     Screen('TextSize', theWindow, fontsize);
     DrawFormattedText(theWindow, double(choice{i}), 'center', 'center', white, [],[],[],[],[],xy_word(i,:));
 end
@@ -548,7 +609,7 @@ while(1)
     elseif x > W*2/3, x = W*2/3;
     end
     
-    fontsize = 32;
+    fontsize = 48;
     Screen('TextSize', theWindow, fontsize);
     Screen(theWindow,'FillRect',bgcolor, window_rect);
     Screen('DrawLines',theWindow, xy, 5, 255);
@@ -678,9 +739,9 @@ for i = 1:(numel(title(1,:))-1)
                 
                 Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                %                     if USE_EYELINK
-                %                         Eyelink('Message','Rest Question response');
-                %                     end
+                if USE_EYELINK
+                    Eyelink('Message','Post Run Question response');
+                end
                 waitsec_fromstarttime(rrtt, 0.5);
                 post_run.rating{4,z(i)} = GetSecs;
                 break;
@@ -735,9 +796,9 @@ for i = 1:(numel(title(1,:))-1)
                 
                 Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                %                     if USE_EYELINK
-                %                         Eyelink('Message','Rest Question response');
-                %                     end
+                if USE_EYELINK
+                    Eyelink('Message','Rest Question response');
+                end
                 waitsec_fromstarttime(rrtt, 0.5);
                 post_run.rating{4,z(i)} = GetSecs;
                 break;
@@ -755,5 +816,3 @@ data.postrunQ{story_num} = post_run ;
 save(data.datafile, 'data', '-append');
 
 end
-
-
