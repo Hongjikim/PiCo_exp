@@ -7,7 +7,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir = '/Users/hongji/Dropbox/PiCo_git';
+basedir = '/Users/hongji/Dropbox/PiCo_git'; %'C:\Users\Cocoanlab_WL01\Desktop\pico'
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
@@ -28,7 +28,7 @@ for i = 1:length(varargin)
                 USE_EYELINK = true;
             case {'biopac'}
                 USE_BIOPAC = true;
-                channel_n = 1;
+                channel_n = 3;
                 biopac_channel = 0;
                 ljHandle = BIOPAC_setup(channel_n); % BIOPAC SETUP
         end
@@ -140,6 +140,7 @@ try
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
+    Screen('TextSize', theWindow, fontsize); 
     if ~testmode, HideCursor; end
     
     %% SETUP: Eyelink
@@ -187,7 +188,7 @@ try
             
             data.runscan_starttime = GetSecs; % run start timestamp
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white, [], [], [], 1.2);
+            DrawFormattedText(theWindow, double('시작합니다...'), 'center', textH, white, [], [], [], 1.2);
             Screen('Flip', theWindow);
             
             waitsec_fromstarttime(data.runscan_starttime, 4); % For disdaq
@@ -210,7 +211,7 @@ try
             if USE_BIOPAC
                 data.biopac_starttime = GetSecs; % biopac timestamp
                 BIOPAC_trigger(ljHandle, biopac_channel, 'on');
-                waitsec_fromstarttime(data.biopac_starttime, 0.8);
+                waitsec_fromstarttime(data.biopac_starttime, 1);
                 BIOPAC_trigger(ljHandle, biopac_channel, 'off');
             end
             
@@ -233,7 +234,7 @@ try
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
-            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
+            DrawFormattedText(theWindow, start_msg, 'center', textH, text_color);
             Screen('Flip', theWindow);
             sTime_2 = GetSecs;
             waitsec_fromstarttime(sTime_2, 4)
@@ -256,7 +257,7 @@ try
             data.dat{story_num}{word_i}.word_duration = data.trial_sequence{story_num}{word_i}.word_duration;
             fontsize = 60;
             Screen('TextSize', theWindow, fontsize);
-            DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
+            DrawFormattedText(theWindow, msg, 'center', textH, text_color);
             Screen('Flip', theWindow);
             
             duration = duration + data.trial_sequence{story_num}{word_i}.word_duration;
@@ -319,7 +320,7 @@ try
         end
         
         fixation_point = double('+') ;
-        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+        DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
         Screen('Flip', theWindow);
         
         waitsec_fromstarttime(data.runscan_starttime, 320); % flexible time (maximum 300 sec of story)
@@ -349,7 +350,7 @@ try
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             run_end_msg = double('이번 이야기가 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
-            DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color);
+            DrawFormattedText(theWindow, run_end_msg, 'center', textH, text_color);
             Screen('Flip', theWindow);
         end
         
@@ -410,7 +411,7 @@ global theWindow W H; % window property
 global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
 
 fixation_point = double('+') ;
-DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
 Screen('Flip', theWindow);
 
 resting_sTime = GetSecs;
@@ -428,12 +429,12 @@ while GetSecs - resting_sTime < 150
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-            DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color);
+            DrawFormattedText(theWindow, FT_msg, 'center', textH, text_color);
             Screen('Flip', theWindow);
         end
         data.resting{story_num}.end_Sampling{i} = GetSecs;
         fixation_point = double('+') ;
-        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+        DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
         Screen('Flip', theWindow);
     end
     %     else
@@ -450,7 +451,7 @@ while GetSecs - data.resting{story_num}.fixation_end_time <5
     fontsize = 42;
     Screen('TextSize', theWindow, fontsize);
     end_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-    DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
+    DrawFormattedText(theWindow, end_msg, 'center', textH, text_color);
     Screen('Flip', theWindow);
 end
 
@@ -615,7 +616,7 @@ while(1)
     Screen('DrawLines',theWindow, xy, 5, 255);
     
     DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
-    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
+    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+60, white); % check
     % Draw scale letter
     DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
         [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);

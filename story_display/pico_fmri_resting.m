@@ -7,7 +7,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir = '/Users/hongji/Dropbox/PiCo_git'; %edit
+basedir = '/Users/hongji/Dropbox/PiCo_git'; % 'C:\Users\Cocoanlab_WL01\Desktop\pico'
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
@@ -195,7 +195,7 @@ try
             if USE_BIOPAC
                 data.biopac_starttime = GetSecs; % biopac timestamp
                 BIOPAC_trigger(ljHandle, biopac_channel, 'on');
-                waitsec_fromstarttime(data.biopac_starttime, 0.8);
+                waitsec_fromstarttime(data.biopac_starttime, 1);
                 BIOPAC_trigger(ljHandle, biopac_channel, 'off');
             end
             

@@ -13,104 +13,213 @@ fnames_val = filenames('*alence*');
 %%
 subplot(2,1,1);
 
+for ii = 1:numel(fnames_val)
+    load(fnames_val{ii});
+    line_number =  numel(data.trajectory_save)/2 ; 
+    
+    for i = 1:line_number
+        length_line{ii,i} = numel(data.trajectory_save{1,i});
+    end
+end
+
+for i = 1:line_number
+    minmin(i) = min([length_line{:,i}]);
+end
+
 self_val = filenames('*self_val*');
 
 for ii = 1:numel(self_val)
     load(self_val{ii});
+    line_number =  numel(data.trajectory_save)/2 ; 
 
-    data.trajectory_save{3,1}=data.trajectory_save{1,1} - 220;
-    for i = 2:14
-        data.trajectory_save{3,i} = data.trajectory_save{1,i} + data.trajectory_save{3,i-1}(end);
+    
+    data.trajectory_save{3,1} = data.trajectory_save{1,1}(1:minmin(1)) - 220;
+    for i = 2:line_number
+        data.trajectory_save{3,i} = data.trajectory_save{1,i}(1:minmin(i)) + data.trajectory_save{3,i-1}(end) -220;
     end
     
-    for i = 1:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-480; end
-    for i = 2:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-960; end
+    for i = 1:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 480;
+    end
     
-    hold on;
-    plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 2.5);
+    for i = 2:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 960;
+    end
+    
+    g = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 2.5);
     ylabel('Valence');
+    
+    self_val_data = -cat(1,data.trajectory_save{4,:}); 
 end
 
 for ii = 1:numel(fnames_val)
     load(fnames_val{ii});
+    line_number =  numel(data.trajectory_save)/2 ; 
 
-    data.trajectory_save{3,1}=data.trajectory_save{1,1} - 220;
-    for i = 2:14
-        data.trajectory_save{3,i} = data.trajectory_save{1,i} + data.trajectory_save{3,i-1}(end);
+    
+    data.trajectory_save{3,1} = data.trajectory_save{1,1}(1:minmin(1)) - 220;
+    for i = 2:line_number
+        data.trajectory_save{3,i} = data.trajectory_save{1,i}(1:minmin(i)) + data.trajectory_save{3,i-1}(end) -220;
     end
     
-    for i = 1:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-480; end
-    for i = 2:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-960; end
+    for i = 1:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 480;
+    end
+    
+    for i = 2:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 960;
+    end
     
     hold on;
     plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 1);
     plot2.Color(4) = 0.3; 
     ylabel('Valence');
-    
-    all_y_dat_val{ii} = cat(1,data.trajectory_save{4,:}) ;
+
+    cat_trajectory{ii,:} = - cat(1,data.trajectory_save{4,:});
+    %numel(cat_trajectory{1})
+    %all_y_dat_val{ii} = cat(1,data.trajectory_save{4,:}) ;
     
 end
 
-all_y_cat_dat_val = cat(1,all_y_dat_val{1,:}) ; 
-mean_y_val = - mean(all_y_cat_dat_val);
-hold on;
-plot([0 20000], [mean_y_val mean_y_val], '--b', 'linewidth', 2.0); % 'Color', [1 0 0]) ; 
+% temp = zeros(14705,1);
+% 
+% for i = 1:9
+%     temp = temp + [cat_trajectory{i}];
+% end
+% mean_temp_val = temp./9 ;
+% 
+% hold on;
+% plot(cat(1,data.trajectory_save{3,:}), mean_temp_val, '--b', 'linewidth', 3.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+
     
+for i = 1:9
+    for j = 1:numel(cat_trajectory{1})
+        new_num_val(i,j) = cat_trajectory{i}(j);
+    end
+end
+
+mean_val = mean(new_num_val)' ;
+
+f = plot(cat(1,data.trajectory_save{3,:}), mean(new_num_val), '--b', 'linewidth', 3.0, 'Color', [0 1 0]); % 'Color', [1 0 0]) ; 
+e = plot(cat(1,data.trajectory_save{3,:}), std(new_num_val)+mean(new_num_val), '--', 'linewidth', 1.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+plot(cat(1,data.trajectory_save{3,:}), -std(new_num_val)+mean(new_num_val), '--', 'linewidth', 1.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+
+legend([e, f, g], 'SD', 'Mean', 'Story Owner', 'Location', 'NorthEastOutside')
+
 box off;
 set(gcf, 'color', 'w');
-set(gca, 'fontsize', 20, 'xlim', [0 18500], 'ylim', [-250 250], 'linewidth', 1.2, 'tickdir', 'out', 'ticklength', [.005 .005]);
+set(gca, 'fontsize', 20, 'xlim', [0 16000], 'ylim', [-250 250], 'linewidth', 1.2, 'tickdir', 'out', 'ticklength', [.005 .005]);
 
+clear minmin
+
+% self-relevance
 hold on; 
 subplot(2,1,2);
+
+for ii = 1:numel(fnames_sr)
+    load(fnames_sr{ii});
+    line_number =  numel(data.trajectory_save)/2 ; 
+    
+    for i = 1:line_number
+        length_line{ii,i} = numel(data.trajectory_save{1,i});
+    end
+end
+
+for i = 1:line_number
+    minmin(i) = min([length_line{:,i}]);
+end
 
 self_sr = filenames('*self_self*');
 for ii = 1:numel(self_sr)
     load(self_sr{ii});
+    line_number =  numel(data.trajectory_save)/2 ; 
 
-    data.trajectory_save{3,1}=data.trajectory_save{1,1} - 220;
-    for i = 2:14
-        data.trajectory_save{3,i} = data.trajectory_save{1,i} + data.trajectory_save{3,i-1}(end);
+    data.trajectory_save{3,1} = data.trajectory_save{1,1}(1:minmin(1)) - 220;
+    for i = 2:line_number
+        data.trajectory_save{3,i} = data.trajectory_save{1,i}(1:minmin(i)) + data.trajectory_save{3,i-1}(end) -220;
     end
     
-    for i = 1:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-480; end
-    for i = 2:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-960; end
+    for i = 1:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 480;
+    end
+    
+    for i = 2:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 960;
+    end
     
     hold on;
-    plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 2.5);
-    ylabel('Valence');
+    d = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 2.5);
+    ylabel('Self-Releavnce');
+    %legend('story owner');
+    
+    self_sr_data = -cat(1,data.trajectory_save{4,:}); 
+    
 end
+
 
 for ii = 1:numel(fnames_sr)
     load(fnames_sr{ii});
-   
-    data.trajectory_save{3,1}=data.trajectory_save{1,1} - 220;
-    for i = 2:14
-        data.trajectory_save{3,i}=data.trajectory_save{1,i}+data.trajectory_save{3,i-1}(end);
+    line_number =  numel(data.trajectory_save)/2 ; 
+
+    
+    data.trajectory_save{3,1} = data.trajectory_save{1,1}(1:minmin(1)) - 220;
+    for i = 2:line_number
+        data.trajectory_save{3,i} = data.trajectory_save{1,i}(1:minmin(i)) + data.trajectory_save{3,i-1}(end) -220;
     end
     
-    for i = 1:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-480; end
-    for i = 2:2:14, data.trajectory_save{4,i}=data.trajectory_save{2,i}-960; end
+    for i = 1:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 480;
+    end
     
+    for i = 2:2:line_number
+        data.trajectory_save{4,i} = data.trajectory_save{2,i}(1:minmin(i)) - 960;
+    end
     
     hold on;
-    plot1 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth',1);
-    plot1.Color(4) = 0.3; 
+    plot2 = plot(cat(1,data.trajectory_save{3,:}), -cat(1,data.trajectory_save{4,:}), 'linewidth', 1);
+    plot2.Color(4) = 0.3; 
     ylabel('Self-relevance');
-    
-    all_y_data_sr{ii} = cat(1,data.trajectory_save{4,:})
+
+    cat_trajectory{ii,:} = - cat(1,data.trajectory_save{4,:});
+    %numel(cat_trajectory{1})
+    %all_y_dat_val{ii} = cat(1,data.trajectory_save{4,:}) ;
     
 end
 
-all_y_data_cat_sr = cat(1,all_y_data_sr{1,:}) ; 
-mean_y_sr = - mean(all_y_data_cat_sr);
-hold on;
-plot([0 20000], [mean_y_sr mean_y_sr], '--b', 'linewidth', 2.0); %'Color', [1 0 0]) ; 
+% temp = zeros(14704,1);
+% 
+% for i = 2:10
+%     temp = temp + [cat_trajectory{i}];
+% end
+% mean_temp = temp./9 ;
+% 
+% hold on;
+% plot(cat(1,data.trajectory_save{3,:}), mean_temp, 'linewidth', 3.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+
+for i = 1:9
+    for j = 1:numel(cat_trajectory{1})
+        new_num_sr(i,j) = cat_trajectory{i}(j);
+    end
+end
+
+mean_sr = mean(new_num_sr)';
+
+c = plot(cat(1,data.trajectory_save{3,:}), mean(new_num_sr), '--b', 'linewidth', 3.0, 'Color', [0 1 0]); % 'Color', [1 0 0]) ; 
+
+
+hold on
+a = plot(cat(1,data.trajectory_save{3,:}), std(new_num_sr)+mean(new_num_sr), '--', 'linewidth', 1.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+b = plot(cat(1,data.trajectory_save{3,:}), -std(new_num_sr)+mean(new_num_sr), '--', 'linewidth', 1.0, 'Color', [1 0 0]); % 'Color', [1 0 0]) ; 
+legend([a, c, d], 'SD', 'Mean', 'Story Owner', 'Location', 'NorthEastOutside')
+
+% er_bar = errorbar(cat(1,data.trajectory_save{3,:}),  -cat(1,data.trajectory_save{4,:}), std(new_num_sr)) ;
+% er_bar.Color(4) = 0.2; 
 
 
 
 box off;
 set(gcf, 'color', 'w');
-set(gca, 'fontsize', 20, 'xlim', [0 18500], 'ylim', [-10 350],  'linewidth', 1.2, 'tickdir', 'out', 'ticklength', [.005 .005]);
+set(gca, 'fontsize', 20, 'xlim', [0 16000], 'ylim', [-10 350],  'linewidth', 1.2, 'tickdir', 'out', 'ticklength', [.005 .005]);
 set(gcf, 'Position',  [433 841 2128 497]);
 % set(gcf, 'Position', [62         842        1911         349]);
 % 
@@ -122,8 +231,27 @@ set(gcf, 'Position',  [433 841 2128 497]);
 % pagesetup(gcf);
 % saveas(gcf, savename);
 
+subplot(2,1,1)
+vp = plot(self_val_data); 
+hold on; 
+vmp = plot(mean_val);
+legend([vp, vmp], 'story owner', 'mean (N=9)')
+ylabel('valence')
+title ('corr = 0.9362')
 
-%% boxplot
+subplot(2,1,2)
+vp = plot(self_sr_data); 
+hold on; 
+vmp = plot(mean_sr);
+legend([vp, vmp], 'story owner', 'mean (N=9)')
+ylabel('self-relavance')
+title ('corr = 0.2055')
+
+
+cor_val = corr(self_val_data, mean_val)
+corr_sr = corr(self_sr_data, mean_sr)
+%%
+boxplot
 
 % valence
 max_y = 0;
@@ -168,8 +296,8 @@ max_y = 0;
 for i = 1:numel(fnames_sr)
     load(fnames_sr{i});
     
-    for j = 1:2:14, data.trajectory_save{4,j}=data.trajectory_save{2,j}-480; end
-    for j = 2:2:14, data.trajectory_save{4,j}=data.trajectory_save{2,j}-960; end
+    for j = 1:2:numel(data.trajectory_save)/2, data.trajectory_save{4,j}=data.trajectory_save{2,j}-480; end
+    for j = 2:2:numel(data.trajectory_save)/2, data.trajectory_save{4,j}=data.trajectory_save{2,j}-960; end
     
     y{i} = -cat(1,data.trajectory_save{4,:});
     max_y = max(max_y, numel(y{i}));
