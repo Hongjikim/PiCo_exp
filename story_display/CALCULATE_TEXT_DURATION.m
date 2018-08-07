@@ -74,7 +74,9 @@ for i = 1:my_length
     out{i}.msg = char(msg);
     out{i}.msg_double = msg;
 end
+fprintf('\n')
 disp('***************')
 disp(['단어수:  ', num2str(my_length), '단어']) 
 disp(['시간:  ', num2str(cal_duration), '초'])
 disp('***************')
+fprintf('\n')
