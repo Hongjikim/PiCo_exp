@@ -1,4 +1,4 @@
-clear all
+clear
 myText = input('\n 전체 글을 한 줄로 입력하시오: \n', 's');
 doubleText = double(myText);
 
