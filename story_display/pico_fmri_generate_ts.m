@@ -1,5 +1,16 @@
 function [ts] = pico_fmri_generate_ts
-
+% 
+% function [ts] = pico_fmri_generate_ts
+% 
+% To make 8 stories into word unit and randomize the order
+%
+%
+% ..
+%    Copyright (C) 2018  Cocoan lab
+% ..
+%
+%
+%%
 datdir = '/Users/hongji/Dropbox/PiCo_git/data';  % edit 'data'
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
