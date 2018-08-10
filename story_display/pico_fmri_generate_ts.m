@@ -22,11 +22,18 @@ stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
 % reorder: stories 
 rng('shuffle');
 
-rand_order = [randperm(4); randperm(4)];
-rand_order(2,:) = rand_order(2,:) + 4;
-self_common = [ones(1,4);ones(1,4)*2];
+rand_order_odd = [2*randperm(3)-1; 2*(randperm(3)+2)];
+rand_order_even = [2*randperm(2); 2*(randperm(2)+2)+1];
+
+rand_order_all = [rand_order_odd rand_order_even]; 
+mix_order = randperm(5);
+for i = 1:5
+    rand_order(:,i) = rand_order_all(:,mix_order(i));
+end
+self_common = [ones(1,5);ones(1,5)*2];
 idx = randperm(4,2);
 self_common(:,idx) = self_common([2 1],idx);
+self_common(:,5) = randperm(2)';
 
 for i = 1:size(rand_order,2)
     rand_order(:,i) = rand_order(self_common(:,i),i);
@@ -48,11 +55,20 @@ for story_i = 1:numel(stories)
     fprintf('\n*************************\n text file: %s', stories{story_i});
     fprintf('\n total time: %.2f seconds', cal_duration);
     fprintf('\n total words: %.f words \n*************************\n', my_length);
+    hold on; 
+    plot(story_i, cal_duration, 'o')
+    xlim([0 11])
+    ylim([150 350])
+    %ylim([0 2])
 end
-
+plot1 = plot([0 11], [240 240])
+plot2 = plot([0 22], [270 270])
+ legend([plot1, plot2], '240','270')
+ 
 for story_i = 1:numel(stories)
     fprintf('story order %d: %s\n', story_i, out{story_i}{1}.story_name)
 end
+
 
 %% add out into ts
 
@@ -71,6 +87,10 @@ ts{run_i}{2} = out{6};
 run_i = 4;
 ts{run_i}{1} = out{7};
 ts{run_i}{2} = out{8};
+
+run_i = 5;
+ts{run_i}{1} = out{9};
+ts{run_i}{2} = out{10};
 
 %% save ts
 nowtime = clock;

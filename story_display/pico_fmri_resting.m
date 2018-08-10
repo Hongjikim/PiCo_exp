@@ -56,7 +56,7 @@ nowtime = clock;
 subjdate = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
 
 data.subject = sid;
-data.datafile = fullfile(subject_dir, [subjdate, '_PICO_', sid, 'FT_run', sprintf('%.2d', ft_num), '.mat']);
+data.datafile = fullfile(subject_dir, [subjdate, '_', sid, '_FT_run', sprintf('%.2d', ft_num), '.mat']);
 data.version = 'PICO_v0_05-2018_Cocoanlab';
 data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
@@ -145,9 +145,43 @@ try
         waitsec_fromstarttime(GetSecs, .5);
     end
     
-    %% FREE THINKING START
+    %% HEAD SCOUT AND DISTORTION CORRECTION
+  while (1)
+        [~,~,keyCode] = KbCheck;
+        
+        if keyCode(KbName('a'))==1
+            break
+        elseif keyCode(KbName('q'))==1
+            abort_experiment('manual');
+        end
+        
+        Screen(theWindow, 'FillRect', bgcolor, window_rect);
+        ready_prompt = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있으나 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.');
+        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
+        Screen('Flip', theWindow);
+        
+  end
+   WaitSecs(0.1);
+    while (1)
+        [~,~,keyCode] = KbCheck;
+        
+        if keyCode(KbName('b'))==1
+            break
+        elseif keyCode(KbName('q'))==1
+            abort_experiment('manual');
+        end
+        
+        Screen(theWindow, 'FillRect', bgcolor, window_rect);
+        ready_prompt = double('+');
+        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
+        Screen('Flip', theWindow);
+        
+    end
+  
     
-    % INPUT FROM THE SCANNER
+    %% Start FT session
+    
+    %INPUT FROM THE SCANNER
     while (1)
         [~,~,keyCode] = KbCheck;
         
@@ -363,7 +397,7 @@ tb = H/5;
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
 for i = 1:5
-    data.post_run_rating{i} = question_type{i};
+    rating{1,i} = question_type{i};
 end
 
 save(data.datafile, 'data', '-append');
@@ -415,8 +449,8 @@ save(data.datafile, 'data', '-append');
                 Screen('Flip', theWindow);
                 
                 if button(1)
-                    rest.rating{2,z(i)} = (x-W/2)/(W/4);
-                    rest.rating{3,z(i)} = GetSecs-question_start;
+                    rating{2,z(i)} = (x-W/2)/(W/4);
+                    rating{3,z(i)} = GetSecs-question_start;
                     rrtt = GetSecs;
                     
                     Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -436,7 +470,7 @@ save(data.datafile, 'data', '-append');
 %                         Eyelink('Message','Rest Question response');
 %                     end
                     waitsec_fromstarttime(rrtt, 0.5);
-                    rest.rating{4,z(i)} = GetSecs;
+                    rating{4,z(i)} = GetSecs;
                     break;
                 end
             end
@@ -470,8 +504,8 @@ save(data.datafile, 'data', '-append');
                 Screen('Flip', theWindow);
                 
                 if button(1)
-                    rest.rating{2,z(i)} = (x-W*3/8)/(W/4);
-                    rest.rating{3,z(i)} = GetSecs-question_start;
+                    rating{2,z(i)} = (x-W*3/8)/(W/4);
+                    rating{3,z(i)} = GetSecs-question_start;
                     rrtt = GetSecs;
                     
                     Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -491,7 +525,7 @@ save(data.datafile, 'data', '-append');
 %                         Eyelink('Message','Rest Question response');
 %                     end
                     waitsec_fromstarttime(rrtt, 0.5);
-                    rest.rating{4,z(i)} = GetSecs;
+                    rating{4,z(i)} = GetSecs;
                     break;
                 end
             end
@@ -499,9 +533,20 @@ save(data.datafile, 'data', '-append');
     end
     WaitSecs(.1);
 
-    data.rest = rest ;
+    data.rating = rating ;
 
 save(data.datafile, 'data', '-append');
+
+    while (1)
+        [~,~,keyCode] = KbCheck;
+
+        if keyCode(KbName('space'))==1
+            break
+        elseif keyCode(KbName('q'))==1
+            abort_experiment('manual');
+        end
+    end
+
     
 end
 

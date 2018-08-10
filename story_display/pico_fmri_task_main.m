@@ -82,7 +82,7 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color rT % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color rT USE_EYELINK % lb tb recsize barsize rec; % rating scale
 
 % Screen setting
 bgcolor = 100;
@@ -100,9 +100,9 @@ fontsize = 60; %42?
 
 screens = Screen('Screens');
 window_num = screens(end);
-Screen('Preference', 'SkipSyncTests', 0); % Q?? 1
+Screen('Preference', 'SkipSyncTests', 1);
 window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]/window_ratio; %for mac, [0 0 2560 1600];
+window_rect = [0 0 window_info.width window_info.height]; %for mac, [0 0 2560 1600];
 
 
 W = window_rect(3); %width of screen
@@ -136,7 +136,7 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, rect]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);%[0 0 2560/2 1440/2]
+    [theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
@@ -176,7 +176,7 @@ try
                 
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-                DrawFormattedText(theWindow, ready_prompt,'center', textH, white); %'center', 'textH'
+                DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
                 Screen('Flip', theWindow);
                 
             end
@@ -188,7 +188,7 @@ try
             
             data.runscan_starttime = GetSecs; % run start timestamp
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            DrawFormattedText(theWindow, double('시작합니다...'), 'center', textH, white, [], [], [], 1.2);
+            DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white, [], [], [], 1.2);
             Screen('Flip', theWindow);
             
             waitsec_fromstarttime(data.runscan_starttime, 4); % For disdaq
@@ -234,7 +234,7 @@ try
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
-            DrawFormattedText(theWindow, start_msg, 'center', textH, text_color);
+            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             sTime_2 = GetSecs;
             waitsec_fromstarttime(sTime_2, 4)
@@ -257,7 +257,7 @@ try
             data.dat{story_num}{word_i}.word_duration = data.trial_sequence{story_num}{word_i}.word_duration;
             fontsize = 60;
             Screen('TextSize', theWindow, fontsize);
-            DrawFormattedText(theWindow, msg, 'center', textH, text_color);
+            DrawFormattedText(theWindow, msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
             
             duration = duration + data.trial_sequence{story_num}{word_i}.word_duration;
@@ -320,7 +320,7 @@ try
         end
         
         fixation_point = double('+') ;
-        DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
+        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
         Screen('Flip', theWindow);
         
         waitsec_fromstarttime(data.runscan_starttime, 320); % flexible time (maximum 300 sec of story)
@@ -350,7 +350,7 @@ try
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             run_end_msg = double('이번 이야기가 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
-            DrawFormattedText(theWindow, run_end_msg, 'center', textH, text_color);
+            DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
         end
         
@@ -363,7 +363,7 @@ try
     %% RUN END MESSAGE
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     run_end_msg = '잘하셨습니다. 잠시 대기해 주세요.';
-    DrawFormattedText(theWindow, run_end_msg, 'center', textH, white);
+    DrawFormattedText(theWindow, run_end_msg, 'center', 'center', white);
     Screen('Flip', theWindow);
     
     save(data.datafile, 'data', '-append');
@@ -411,7 +411,7 @@ global theWindow W H; % window property
 global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
 
 fixation_point = double('+') ;
-DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
+DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
 Screen('Flip', theWindow);
 
 resting_sTime = GetSecs;
@@ -429,12 +429,12 @@ while GetSecs - resting_sTime < 150
             fontsize = 42;
             Screen('TextSize', theWindow, fontsize);
             FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-            DrawFormattedText(theWindow, FT_msg, 'center', textH, text_color);
+            DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color);
             Screen('Flip', theWindow);
         end
         data.resting{story_num}.end_Sampling{i} = GetSecs;
         fixation_point = double('+') ;
-        DrawFormattedText(theWindow, fixation_point, 'center', textH, text_color);
+        DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
         Screen('Flip', theWindow);
     end
     %     else
@@ -451,7 +451,7 @@ while GetSecs - data.resting{story_num}.fixation_end_time <5
     fontsize = 42;
     Screen('TextSize', theWindow, fontsize);
     end_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-    DrawFormattedText(theWindow, end_msg, 'center', textH, text_color);
+    DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
     Screen('Flip', theWindow);
 end
 
@@ -664,7 +664,7 @@ function data = pico_post_run_survey(data, story_num)
 
 global theWindow W H; % window property
 global white red orange blue bgcolor tb ; % color
-global fontsize window_rect text_color window_ratio
+global fontsize window_rect text_color USE_EYELINK
 tb = H/5;
 
 post_run.start_time = GetSecs;
@@ -740,9 +740,6 @@ for i = 1:(numel(title(1,:))-1)
                 
                 Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                if USE_EYELINK
-                    Eyelink('Message','Post Run Question response');
-                end
                 waitsec_fromstarttime(rrtt, 0.5);
                 post_run.rating{4,z(i)} = GetSecs;
                 break;
