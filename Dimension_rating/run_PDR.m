@@ -1,5 +1,9 @@
 %%
 cd('/Users/hongji/Dropbox/PiCo_git/Dimension_rating');
+data = dimension_rating('practice')
+
+%%
+cd('/Users/hongji/Dropbox/PiCo_git/Dimension_rating');
 data = dimension_rating('valence')
 
 %%

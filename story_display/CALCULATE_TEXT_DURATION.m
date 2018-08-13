@@ -2,6 +2,18 @@ clear
 myText = input('\n 전체 글을 한 줄로 입력하시오: \n', 's');
 doubleText = double(myText);
 
+% if exist('curr_story', 'var') == 0
+%     curr_story = ' ';
+% end
+% 
+% new_sentence = input('\n **** 다음 문장을 입력하시오:', 's');
+% this_story = [curr_story, new_sentence];
+% doublestory = double(this_story);
+% 
+% if doublestory(end) ~= 32
+%     doublestory= [doublestory 32];
+%     this_story = char(doublestory);
+% end
 
 letter_time =  0.6;   %0.15*4
 period_time = 3; %3;
@@ -74,6 +86,7 @@ for i = 1:my_length
     out{i}.msg = char(msg);
     out{i}.msg_double = msg;
 end
+
 fprintf('\n')
 disp('***************')
 disp(['단어수:  ', num2str(my_length), '단어']) 

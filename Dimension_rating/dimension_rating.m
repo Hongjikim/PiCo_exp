@@ -55,7 +55,7 @@ blue = [0 85 169];
 orange = [255 164 0];
 bgcolor = 100;
 
-window_ratio = 1.5;
+window_ratio = 1.15;
 
 screens = Screen('Screens');
 window_num = screens(end);
@@ -66,7 +66,7 @@ window_rect = [0 0 window_info.width window_info.height]/window_ratio;
 W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
 textH = H/2.3;
-axis_w = W/1.55;
+% axis_w = W/1.55;
 axis_h = H/9.5;
 
 Screen('Preference', 'SkipSyncTests', 1);
@@ -75,16 +75,21 @@ Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
 % font = 'NanumBarunGothic';
 % Screen('TextFont', theWindow, font);
 % Screen('TextSize', windowPtr, fontsize);
-HideCursor;
+% HideCursor;
 
-the_text = 'cwk_1.txt'; % edit
+
+if strcmp(dimension_type, 'practice')
+    the_text = 'sample_3.txt';
+else
+    the_text = 'cwk_1.txt'; % edit
+end
 double_text_cell = make_text_PDR(the_text);
 
 sTime = GetSecs;
 
 % Set the center of axis
-y_zero{1} = round(H/4);
-y_zero{2} = round(H/2);
+y_zero{1} = round(H/3.5); %editted
+y_zero{2} = round(H/1.6);
 y_interval = y_zero{2}-y_zero{1};
 x_zero = round(W/14);
 
@@ -96,11 +101,15 @@ for i = 1:numel(double_text_cell)
         TextW{i}(j,1) = Screen(theWindow,'DrawText',double_text_cell{i}(j,:),0,0);
     end
 end
+
 Screen(theWindow,'FillRect',bgcolor, window_rect);
 
 for i = start_page:numel(double_text_cell)
     
     text = double_text_cell{i};
+    
+    rng('shuffle')
+    rand_practice = round(randi(40,1,10)*25);
     
     % loop for lines
     for line_i = 1:size(double_text_cell{i},1)
@@ -122,7 +131,9 @@ for i = start_page:numel(double_text_cell)
         if strcmp(dimension_type, 'valence')
             instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
         elseif strcmp(dimension_type, 'self_relevance')
-            instruction = double('아래 글을 읽고, 자기관련도를 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 나와 관련 있음)');
+            instruction = double('아래 글을 읽고, 자기관련도를 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 나와 관련 있음)'); 
+        elseif strcmp(dimension_type, 'practice')
+            instruction = double('아래 글을 읽고, 빨간 밑줄이 쳐진 글자는 최대로, 파란 밑줄이 쳐진 글자는 최소로 그래프(곡선)을 그려주세요.(연습)');
         end
         
         
@@ -140,6 +151,27 @@ for i = start_page:numel(double_text_cell)
             DrawFormattedText(theWindow, text(1,:), x_zero + 10, y_zero{1} - axis_h - 20, 255);
             DrawFormattedText(theWindow, text(2,:), x_zero + 10, y_zero{2} - axis_h - 20, 255);
             
+            if strcmp(dimension_type, 'practice')
+                if size(double_text_cell{i},1) == 1
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(1), y_zero{1} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(2), y_zero{1} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(3), y_zero{1} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(4), y_zero{1} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(5), y_zero{1} - axis_h - 20, [0 0 255]);
+                else
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(1), y_zero{1} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(2), y_zero{1} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(3), y_zero{1} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(4), y_zero{1} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(5), y_zero{2} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(6), y_zero{2} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(7), y_zero{2} - axis_h - 20, [0 0 255]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(8), y_zero{2} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(9), y_zero{1} - axis_h - 20, [255 0 0]);
+                    DrawFormattedText(theWindow, '_____', x_zero + rand_practice(10), y_zero{2} - axis_h - 20, [0 0 255]);
+                end
+            end
+            
             [x,y,button] = GetMouse(theWindow);
             
             x = round(x);
@@ -152,7 +184,7 @@ for i = start_page:numel(double_text_cell)
                 x = x_zero + TextW{i}(line_i) + 30; SetMouse(x_zero + TextW{i}(line_i) + 30,y);
             end
             
-            if strcmp(dimension_type, 'valence')
+            if strcmp(dimension_type, 'valence') || strcmp(dimension_type, 'practice')
                 if y > y_zero{line_i} + axis_h
                     y = y_zero{line_i} + axis_h; SetMouse(x,y);
                 elseif y < y_zero{line_i} - axis_h
