@@ -55,7 +55,7 @@ blue = [0 85 169];
 orange = [255 164 0];
 bgcolor = 100;
 
-window_ratio = 1.5;
+window_ratio = 1;
 
 screens = Screen('Screens');
 window_num = screens(end);
@@ -75,19 +75,18 @@ Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
 % font = 'NanumBarunGothic';
 % Screen('TextFont', theWindow, font);
 % Screen('TextSize', windowPtr, fontsize);
-% HideCursor;
+HideCursor;
 
 
 if strcmp(dimension_type, 'practice')
     the_text = 'sample_3.txt';
 else
-     stories = filenames(fullfile('/Users/hongji/Desktop/hongji 2/PiCo/Dimension_rating/pico010_lsw', '*.txt'));
+     stories = filenames(fullfile('/Users/cocoanlab/Desktop/hongji/PiCo/Dimension_rating/pico010_lsw', '*.txt'));
     [~, the_text] = fileparts(stories{subject_number})
      the_text = [the_text '.txt']
      %stories(subject_number); % the_text = 'cwk_1.txt'; % edit
     % the_text = 'cwk_1.txt'; % edit
 end
-
 double_text_cell = make_text_PDR(the_text);
 
 sTime = GetSecs;
@@ -148,7 +147,7 @@ for i = start_page:numel(double_text_cell)
         
         while ~ready2
             
-           if size(double_text_cell{i},1) == 1
+            if size(double_text_cell{i},1) == 1
                 draw_axis_PDR(y_zero{1}, dimension_type, 'width', TextW{i});
                 DrawFormattedText(theWindow, text(1,:), x_zero + 10, y_zero{1} - axis_h - 20, 255);
             else
@@ -158,9 +157,8 @@ for i = start_page:numel(double_text_cell)
             end
             
             DrawFormattedText(theWindow, instruction, W/14, H/10, 0);
-%             DrawFormattedText(theWindow, text(1,:), x_zero + 10, y_zero{1} - axis_h - 20, 255);
-%             DrawFormattedText(theWindow, text(2,:), x_zero + 10, y_zero{2} - axis_h - 20, 255);
-%             
+            
+          
             if strcmp(dimension_type, 'practice')
                 if size(double_text_cell{i},1) == 1
                     DrawFormattedText(theWindow, '_____', x_zero + rand_practice(1), y_zero{1} - axis_h - 20, [255 0 0]);

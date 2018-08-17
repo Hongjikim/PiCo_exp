@@ -73,8 +73,8 @@ for i = 1:length(b)
         all_lines(1:2,r_line_1:r_line_2)= horzcat(line1_2, arrow3_4);
         final_rects = [a bb-l a+w bb]';
         Screen('FillRect', theWindow, [120 120 120], final_rects)
-%         DrawFormattedText(theWindow, double(axis_name{1}), a-50, bb-l-10, 0);
-%         DrawFormattedText(theWindow, double(axis_name{2}), a-50, bb+30, 0);
+        DrawFormattedText(theWindow, double(axis_name{1}), a-50, bb-l-10, 0);
+        DrawFormattedText(theWindow, double(axis_name{2}), a-50, bb+30, 0);
     else
         all_lines(1:2,r_line_1:r_line_2)= horzcat(line1_2, arrow1_2, arrow3_4);
         rect_2 = [a bb-l a+w bb+l];

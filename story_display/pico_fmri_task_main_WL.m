@@ -7,7 +7,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir = '/Users/hongji/Dropbox/PiCo_git'; %'C:\Users\Cocoanlab_WL01\Desktop\PiCo-master'
+basedir = 'C:\Users\Cocoanlab_WL01\Desktop\PiCo-master'
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
@@ -368,7 +368,7 @@ try
     DrawFormattedText(theWindow, double(run_end_msg), 'center', 'center', white);
     Screen('Flip', theWindow);
     
-    
+  
     if USE_EYELINK
         Eyelink('Message','Story Run END');
         eyelink_main(edfFile, 'Shutdown');
@@ -389,10 +389,12 @@ try
         end
     end
     
+    % KbStrokeWait;
+    % sca;
     ShowCursor();
     Screen('Clear');
     Screen('CloseAll');
- 
+    
 catch err
     
     % ERROR

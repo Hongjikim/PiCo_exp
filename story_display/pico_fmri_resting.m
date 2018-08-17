@@ -7,7 +7,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir = '/Users/hongji/Dropbox/PiCo_git'; % 'C:\Users\Cocoanlab_WL01\Desktop\pico'
+basedir = '/Users/hongji/Dropbox/PiCo_git'; % 'C:\Users\Cocoanlab_WL01\Desktop\PiCo-master'
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
@@ -57,7 +57,7 @@ subjdate = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
 
 data.subject = sid;
 data.datafile = fullfile(subject_dir, [subjdate, '_', sid, '_FT_run', sprintf('%.2d', ft_num), '.mat']);
-data.version = 'PICO_v0_05-2018_Cocoanlab';
+data.version = 'PICO_v1_08-2018_Cocoanlab';
 data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
 % data.trial_sequence = ts{run_n};
@@ -92,7 +92,6 @@ if testmode == true
 else
     window_ratio = 1;
 end
-
 
 text_color = 255;
 fontsize = 42; %60?
@@ -146,39 +145,41 @@ try
     end
     
     %% HEAD SCOUT AND DISTORTION CORRECTION
-  while (1)
-        [~,~,keyCode] = KbCheck;
-        
-        if keyCode(KbName('a'))==1
-            break
-        elseif keyCode(KbName('q'))==1
-            abort_experiment('manual');
+    if ft_num == 1
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('a'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            ready_prompt = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있으나 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.');
+            DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
+            Screen('Flip', theWindow);
+            
         end
-        
-        Screen(theWindow, 'FillRect', bgcolor, window_rect);
-        ready_prompt = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있으나 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.');
-        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
-        Screen('Flip', theWindow);
-        
-  end
-   WaitSecs(0.1);
-    while (1)
-        [~,~,keyCode] = KbCheck;
-        
-        if keyCode(KbName('b'))==1
-            break
-        elseif keyCode(KbName('q'))==1
-            abort_experiment('manual');
+        WaitSecs(0.1);
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('b'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            ready_prompt = double('+');
+            DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
+            Screen('Flip', theWindow);
+            
         end
-        
-        Screen(theWindow, 'FillRect', bgcolor, window_rect);
-        ready_prompt = double('+');
-        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
-        Screen('Flip', theWindow);
         
     end
   
-    
     %% Start FT session
     
     %INPUT FROM THE SCANNER
@@ -265,7 +266,7 @@ try
         Screen('Flip', theWindow);
     end
     
-    data.endtime_getsecs = GetSecs;
+    data.FTstarttime_getsecs = GetSecs;
     save(data.datafile, 'data', '-append');
     
     data = pico_post_run_survey_resting(data, ft_num); %free thinking for story!
@@ -273,7 +274,7 @@ try
     
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     run_END_msg = '잘하셨습니다. 잠시 대기해 주세요.';
-    DrawFormattedText(theWindow, run_END_msg, 'center', textH, white);
+    DrawFormattedText(theWindow, double(run_END_msg), 'center', textH, white);
     Screen('Flip', theWindow);
     
     save(data.datafile, 'data', '-append');
@@ -289,8 +290,19 @@ try
         BIOPAC_trigger(ljHandle, biopac_channel, 'off');
     end
     
-    KbStrokeWait;
-    sca;
+    data.FTendtime_getsecs = GetSecs;
+    save(data.datafile, 'data', '-append');
+    
+     while (1)
+        [~,~,keyCode] = KbCheck;
+        if keyCode(KbName('q'))==1
+            break
+        end
+    end
+    
+    ShowCursor();
+    Screen('Clear');
+    Screen('CloseAll');
     
 catch err
     
