@@ -87,11 +87,11 @@ global fontsize window_rect text_color % lb tb recsize barsize rec; % rating sca
 % Screen setting
 bgcolor = 100;
 
-if testmode == true
-    window_ratio = 1.6;
-else
-    window_ratio = 1;
-end
+% if testmode == true
+%     window_ratio = 1.6;
+% else
+%     window_ratio = 1;
+% end
 
 text_color = 255;
 fontsize = 42; %60?
@@ -101,7 +101,7 @@ screens = Screen('Screens');
 window_num = screens(end);
 Screen('Preference', 'SkipSyncTests', 0); % Q?? 1
 window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]/window_ratio; %for mac, [0 0 2560 1600];
+window_rect = [0 0 window_info.width window_info.height]; %for mac, [0 0 2560 1600];
 
 
 W = window_rect(3); %width of screen
@@ -121,7 +121,7 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, ~]=Screen('OpenWindow',0, bgcolor, window_rect/window_ratio);%[0 0 2560/2 1440/2]
+    [theWindow, ~]=Screen('OpenWindow',0, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     font = 'NanumBarunGothic.ttf'; % check
     Screen('TextFont', theWindow, font);
@@ -238,10 +238,10 @@ try
     
     % 6 seconds for being ready
     start_msg = double('화면에 + 표시가 나타나면, 자유 생각을 시작하세요. \n + 표시가 사라질 때 마다 지시문에 답변을 해주세요.') ;
-    DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color);
+    DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.3);
     Screen('Flip', theWindow);
     
-    waitsec_fromstarttime(data.runscan_starttime, 14);
+    waitsec_fromstarttime(data.runscan_starttime, 15);
     
     Screen(theWindow,'FillRect',bgcolor, window_rect);
     Screen('Flip', theWindow);
@@ -326,7 +326,7 @@ end
 function data = free_thinking(data, ft_num)
 
 global theWindow W H; % window property
-global fontsize window_rect text_color window_ratio textH % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color  textH % lb tb recsize barsize rec; % rating scale
 
 fixation_point = double('+') ;
 DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
@@ -404,7 +404,7 @@ function data = pico_post_run_survey_resting(data, ft_num, varargin)
 
 global theWindow W H; % window property
 global white red orange blue bgcolor tb ; % color
-global fontsize window_rect text_color window_ratio
+global fontsize window_rect text_color 
 tb = H/5;
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
@@ -457,7 +457,7 @@ save(data.datafile, 'data', '-append');
                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
                 
-                Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+                Screen('DrawDots', theWindow, [x;y], 12, orange, [0 0], 1); % check size
                 Screen('Flip', theWindow);
                 
                 if button(1)

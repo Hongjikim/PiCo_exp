@@ -159,12 +159,50 @@ try
         waitsec_fromstarttime(GetSecs, .5);
     end
     
+    %% PRACTICE: emotion rating
+    if ft_num == 1
+        practice_time = GetSecs;
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('a'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            [practice.taskdat.emotion_word, practice.taskdat.emotion_time, ...
+                        practice.taskdat.emotion_trajectory] = emotion_rating(practice_time, 'practice'); % sub-function
+                    
+            Screen('Flip', theWindow);
+            
+        end
+        WaitSecs(0.1);
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('b'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            ready_prompt = double('잘하셨습니다! 이제 스캔을 시작하겠습니다. 불편한 점이 있다면, 지금 실험자에게 알려주세요.');
+            DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
+            Screen('Flip', theWindow);
+            
+        end
+        
+    end
+    
     %% STORY START
     for story_num = 1:2
         
         if story_num  == 1
             
-            % INPUT FROM THE SCANNER
+       % INPUT FROM THE SCANNER
             while (1)
                 [~,~,keyCode] = KbCheck;
                 
@@ -490,7 +528,7 @@ disp(str); %present this text in command window
 end
 
 
-function [emotion_word, trajectory_time, trajectory] = emotion_rating(starttime)
+function [emotion_word, trajectory_time, trajectory] = emotion_rating(starttime, varagin)
 
 global W H orange bgcolor window_rect theWindow red rT
 
@@ -513,6 +551,18 @@ while(1)
     my = y*1.1;
     
     Screen(theWindow,'FillRect',bgcolor, window_rect);
+    practice_msg = double('이야기 중간중간에 나오는 감정 평가를 연습해보겠습니다. \n 실험자의 지시에 따라 트랙볼을 움직여주세요.');
+    
+    for i = 1:length(varargin)
+        if ischar(varargin{i})
+            switch varargin{i}
+                % functional commands
+                case {'practice'}
+                    DrawFormattedText(theWindow, practice_msg,'center', H/4-20, white, [], [], [], 1.2);
+            end
+        end
+    end
+    
     display_emotion_words(rand_z);
     Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
     Screen('Flip', theWindow);
@@ -578,7 +628,7 @@ Screen(theWindow,'FillRect',bgcolor, window_rect);
 Screen('TextSize', theWindow, fontsize);
 % Rectangle
 for i = 1:numel(theta)
-    Screen('FrameRect', theWindow, colors, CenterRectOnPoint(square,xy(i,1),xy(i,2)),3);
+    Screen('FrameRect', theWindow, colors, CenterRectOnPoint(square,xy(i,1),xy(i,2)),4); %check, 3
 end
 % Choice letter
 for i = 1:numel(choice)
@@ -593,11 +643,11 @@ function [concentration, trajectory_time, trajectory] = concent_rating(starttime
 
 global W H orange bgcolor window_rect theWindow red fontsize white cqT
 intro_prompt1 = double('방금 나타난 이야기에 얼마나 주의를 잘 기울이셨나요?');
-intro_prompt2 = double('8초 안에 트랙볼을 움직여서 집중하고 있는 정도를 클릭해주세요.');
+intro_prompt2 = double('트랙볼을 움직여서 집중하고 있는 정도를 클릭해주세요.');
 title={'전혀 기울이지 않음','보통', '매우 집중하고 있음'};
 
 SetMouse(W/2, H/2);
-cqT = 5;
+cqT = 8;
 trajectory = [];
 trajectory_time = [];
 xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3;
@@ -621,7 +671,7 @@ while(1)
     Screen('DrawLines',theWindow, xy, 5, 255);
     
     DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
-    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+60, white); % check
+    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white); % check
     % Draw scale letter
     DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
         [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);
