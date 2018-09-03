@@ -133,17 +133,17 @@ for i = start_page:numel(double_text_cell)
         xc{line_i} = x_init_ln;
         yc{line_i} = y_init_ln;
         
-        if strcmp(dimension_type, 'valence')
-            instruction = double('아래 글을 읽고, 정서적 긍정/부정을 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 긍정적)');
+        if strcmp(dimension_type, 'valence') 
+            instruction = double('아래 글을 읽고, 느껴지는 감정이 긍정적인지 부정적인지 그래프(곡선)로 자유롭게 표현해주세요. (높을수록 긍정적)');
         elseif strcmp(dimension_type, 'self_relevance')
-            instruction = double('아래 글을 읽고, 자기관련도를 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 나와 관련 있음)'); 
+            instruction = double('아래 글을 읽고, 자신과 얼마나 관련이 있는지를 그래프(곡선)로 자유롭게 표현해주세요. (높을수록 나와 관련 있음)'); 
         elseif strcmp(dimension_type, 'vividness')
-            instruction = double('아래 글을 읽고, 생생한 정도를 그래프(곡선)로 자유롭게 표현해주세요. (높을 수록 생생함)'); 
+            instruction = double('아래 글을 읽고, 얼마나 생생하게 느껴지는지를 그래프(곡선)로 자유롭게 표현해주세요. (높을수록 생생함)'); 
         elseif strcmp(dimension_type, 'practice')
             instruction = double('아래 글을 읽고, 빨간 밑줄이 쳐진 글자는 최대로, 파란 밑줄이 쳐진 글자는 최소로 그래프(곡선)을 그려주세요.(연습)');
         end
         
-        
+         
         remove_dot = false;
         
         while ~ready2

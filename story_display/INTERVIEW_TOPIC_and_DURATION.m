@@ -1,3 +1,11 @@
+%% TOPIC ORDER
+load('RANDOMIZED_INTERVIEW_TOPIC.mat')
+subj_num = input('몇번째 참가자입니까?: ');
+
+topics(subj_num,:)
+
+%% DURATION CALCULATION
+
 clear
 myText = input('\n 전체 글을 한 줄로 입력하시오: \n', 's');
 doubleText = double(myText);
