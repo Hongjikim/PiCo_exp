@@ -1,4 +1,4 @@
-function pico_fmri_word_sampling(varargin)
+function pico_ws(varargin)
 
 % This function can be used to transcribe the PiCo fmri word generation responses.
 %
@@ -91,7 +91,7 @@ end
 % load(dat_file);
 % %load(save_file);
 
-%% Response_N
+% Response_N
 % response_n = 1:numel(wgdata.audiodata); % wgdata.audiodata = 1x40
 response_n = [1:6];
 for i = 1:length(varargin)
@@ -131,5 +131,7 @@ for response_i = response_n   % in case of no-sound, 1:40
     
     save(data.datafile, 'response'); % save the data
 end
+response
 
 end
+
