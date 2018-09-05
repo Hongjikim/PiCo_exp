@@ -17,8 +17,8 @@ function survey = a_fast_fmri_survey(words, varargin)
 %
 %% default setting
 
-basedir =  '/Users/hongji/Dropbox/PiCo_git'
-datdir = fullfile(basedir, 'data') 
+basedir =  '/Users/hongji/Dropbox/PiCo_git';
+datdir = fullfile(basedir, 'data') ;
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 [~, sid] = fileparts(subject_dir);
@@ -85,7 +85,7 @@ screens = Screen('Screens');
 window_num = screens(end);
 Screen('Preference', 'SkipSyncTests', 1);
 window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]/1.6 ;
+window_rect = [0 0 window_info.width window_info.height]/2 ;
 % if testmode
 %     window_rect = [0 0 1260 760]; % in the test mode, use a little smaller screen
 % else
@@ -172,9 +172,12 @@ HideCursor;
 %% PROMPT SETUP:
 practice_prompt{1} = double('지금부터 스캐너에서 말한 단어의 예시가 화면 위쪽에 순서대로 등장할 것입니다.');
 practice_prompt{2} = double('단어와 함께 몇 가지 질문에 나타날 텐데');
-practice_prompt{3} = double('연속된 두 단어 사이에 이어지는 맥락을 고려하여 각 질문에 솔직하게 응답해주세요.');
-practice_prompt{4} = double('여기서 맥락이란 일반적인 단어 사이의 관계를 의미하는 것이 아니라,');
-practice_prompt{5} = double('본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
+practice_prompt{3} = double('각 단어를 떠올린 맥락을 고려하여 각 질문에 솔직하게 응답해주세요.');
+practice_prompt{4} = double('여기서 맥락이란 본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
+practice_prompt{5} = double('혹시 이 단어를 떠올렸을 때의 맥락이 기억나지 않으면 현재 느껴지는 개인적인 감정 혹은 생각에 대해 답해주세요.');
+%을 의미합니다
+%여기서 맥락이란 일반적인 단어 사이의 관계를 의미하는 것이 아니라,');
+%practice_prompt{5} = double('본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
 practice_prompt{6} = double('한번 클릭한 것은 되돌릴 수 없으니 신중하게 클릭해주세요.');
 practice_prompt{7} = double('\n잠시 연습을 해보겠습니다. 시작하려면 스페이스를 눌러주세요.');
 
@@ -209,7 +212,7 @@ if numel(start_line) == 1  % if restart, skip the practice
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
         Screen('TextSize', theWindow, fontsize);
         for i = 1:numel(practice_prompt)
-            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-40*(2-i), white);
+            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-60*(2-i), white);
         end
         Screen('Flip', theWindow);
     end

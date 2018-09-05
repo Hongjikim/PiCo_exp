@@ -97,7 +97,7 @@ screens = Screen('Screens');
 window_num = screens(end);
 Screen('Preference', 'SkipSyncTests', 1);
 window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]/1.6; %for mac, [0 0 2560 1600];
+window_rect = [0 0 window_info.width window_info.height]/2.2; %for mac, [0 0 2560 1600];
 
 W = window_rect(3); %width of screen
 H = window_rect(4); %height of screen
@@ -131,7 +131,7 @@ try
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
     [theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-    font = 'NanumBarunGothic.ttf'; % check
+    font = 'NanumBarunGothic'; % check
     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize);
     if ~testmode, HideCursor; end
@@ -641,9 +641,9 @@ function [concentration, trajectory_time, trajectory] = concent_rating(starttime
 
 global W H orange bgcolor window_rect theWindow red white cqT
 global fontsize_s fontsize_m fontsize_l
-intro_prompt1 = double('방금 나타난 이야기에 얼마나 집중하셨나요?');
+intro_prompt1 = double('방금 나타난 이야기에 얼마나 집중할 수 있었나요?');
 intro_prompt2 = double('트랙볼을 움직여서 집중한 정도를 클릭해주세요.');
-title={'전혀 집중하지 않음','보통', '매우 집중함'};
+title={'전혀','보통', '매우'};
 
 SetMouse(W/2, H/2);
 cqT = 8;
@@ -989,7 +989,7 @@ int_valence.start_time = GetSecs;
 save(data.datafile, 'data', '-append');
 
 % QUESTION
-title={'방금 이야기를 읽으면서 느껴진 감정에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?';
+title={'감정을 보고해주세요.'
     '부정' ;
     '보통' ;
     '긍정'};
@@ -1071,3 +1071,99 @@ data.int_valence{story_num} = int_valence ;
 save(data.datafile, 'data', '-append');
 
 end
+
+
+function survey = story_survey(words, varargin)
+
+global theWindow W H; % window property
+global white red orange blue bgcolor tb ; % color
+global window_rect text_color USE_EYELINK
+global fontsize_s fontsize_m fontsize_l
+global fontsize lb tb bodymap recsize barsize rec; % rating scale
+
+lb=W*8/128;     %110        when W=1280
+tb=H*18/80;     %180
+
+recsize=[W*450/1280 H*175/800];
+barsizeO=[W*340/1280, W*180/1280, W*340/1280, W*180/1280, W*340/1280, 0;
+    10, 10, 10, 10, 10, 0; 10, 0, 10, 0, 10, 0;
+    10, 10, 10, 10, 10, 0; 1, 2, 3, 4, 5, 0];
+rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
+    lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표
+
+bodymap = imread('imgs/bodymap_bgcolor.jpg');
+bodymap = bodymap(:,:,1);
+[body_y, body_x] = find(bodymap(:,:,1) == 255);
+
+bodymap([1:10 791:800], :) = [];
+bodymap(:, [1:10 1271:1280]) = []; % make the picture smaller
+
+survey.start_time = GetSecs;
+
+z= randperm(6);
+barsize = barsizeO(:,z);
+
+for j=1:numel(barsize(5,:))
+    if ~barsize(5,j) == 0 % if barsize(5,j) = 0, skip the scale
+        % if Self, Vivid question, set curson on the left.
+        % the other, set curson on the center.
+        if mod(barsize(5,j),2) == 0
+            SetMouse(rec(j,1)+(recsize(1)-barsize(1,j))/2, rec(j,2)+recsize(2)/2);
+        else SetMouse(rec(j,1)+recsize(1)/2, rec(j,2)+recsize(2)/2);
+        end
+        
+        rec_i = 0;
+        survey.dat{target_i, seeds_i}{barsize(5,j)}.trajectory = [];
+        survey.dat{target_i, seeds_i}{barsize(5,j)}.time = [];
+        
+        starttime = GetSecs; % Each question start time
+        
+        while(1)
+            % Track Mouse coordinate
+            [mx, my, button] = GetMouse(theWindow);
+            
+            x = mx;  % x of a color dot
+            y = rec(j,2)+recsize(2)/2;
+            if x < rec(j,1)+(recsize(1)-barsize(1,j))/2, x = rec(j,1)+(recsize(1)-barsize(1,j))/2;
+            elseif x > rec(j,1)+(recsize(1)+barsize(1,j))/2, x = rec(j,1)+(recsize(1)+barsize(1,j))/2;
+            end
+            
+            % display scales and cursor
+            disp_inst = double('방금 자유 생각 시간에 하신 생각에 대해 답변해주세요.');
+            a_display_survey(z, seeds_i, target_i, disp_inst,'whole');
+            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            Screen('Flip', theWindow);
+            
+            % Get trajectory
+            rec_i = rec_i+1; % the number of recordings
+            survey.dat{target_i, seeds_i}{barsize(5,j)}.trajectory(rec_i,1) = rating(x, j);
+            survey.dat{target_i, seeds_i}{barsize(5,j)}.time(rec_i,1) = GetSecs - starttime;
+            
+            if button(1)
+                survey.dat{target_i, seeds_i}{barsize(5,j)}.rating = rating(x, j);
+                survey.dat{target_i, seeds_i}{barsize(5,j)}.RT = ...
+                    survey.dat{target_i, seeds_i}{barsize(5,j)}.time(end) - ...
+                    survey.dat{target_i, seeds_i}{barsize(5,j)}.time(1);
+                
+                a_display_survey(z, seeds_i, target_i, words,'whole');
+                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
+                Screen('Flip', theWindow);
+                
+                WaitSecs(.3);
+                break;
+            end
+        end
+    end
+    
+    % save 5 questions data every trial (one word pair)
+    data.post_survey{story_num} = survey ;
+    save(data.datafile, 'data', '-append');
+end
+
+WaitSecs(.3);
+
+data.post_survey{story_num} = survey ;
+save(data.datafile, 'data', '-append');
+end
+
+
