@@ -6,16 +6,16 @@
 % words_data
 
 %%
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master_0905/data');
 
-ts= pico_fmri_generate_ts_indi;  %error 나타나는 위치 질문
+ts= pico_fmri_generate_ts;  %error 나타나는 위치 질문
 
 %% resting
-pico_fmri_resting('test'); % 'biopac', 'eye'); %,'testmode')
+pico_fmri_resting(); % 'biopac', 'eye'); %,'testmode')
 
 %% run 1 %line100
-% run_i = 1;s
-%pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
+% run_i = 1;sp
+%pico_fmri_task_main('testmode'); % 'pbiopac', 'fmri',  'eye');
 pico_fmri_task_main(); %'biopac', 'eye'); % ('testmode'); % 'biopac', 'fmri',  'eye');
 
 %% run 2 

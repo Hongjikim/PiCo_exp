@@ -32,8 +32,6 @@ space_loc = find(doubleText==32); % location of space ' '
 comma_loc = find(doubleText==44);
 ending_loc = find(doubleText==46);
 
-
-
 space_loc = [0 space_loc];
 my_length = length(space_loc)-1;
 
@@ -52,17 +50,15 @@ for j = 1:length(comma_loc)
         disp('*** error in contents! ***')
         fprintf('쉼표 위치: %s \n', myText(comma_loc(j)-2:comma_loc(j)))
         fprintf('%s \n', fname)
-        sca
         break
     end
-    for k = 1:length(ending_loc)
-        if sum(ending_loc(k) + 1 == space_loc) == 0
-            disp ('*** error in contents! ***')
-            fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
-            fprintf('%s \n', fname)
-            sca
-            return
-        end
+end
+
+for k = 1:length(ending_loc)
+    if sum(ending_loc(k) + 1 == space_loc) == 0
+        disp ('*** error in contents! ***')
+        fprintf('마침표 위치: %s', myText(ending_loc(k)-2:ending_loc(k)))
+        fprintf('%s \n', fname)
     end
 end
 
@@ -96,10 +92,10 @@ end
 % fprintf('total words: %.f words \n*************************\n', my_length);
 
 
-% Emotion Rating Setting  
+% Valence Rating Setting  
 for i = 1:numel(ending_loc)
     ending_word_loc(i) = find(space_loc == ending_loc(i)+1) - 1;
-    ending_time(i) = out{ending_word_loc(i)}.accumulated_duration ;
+    ending_time(i) = out{ending_word_loc(i)}.accumulated_duration ; %#ok<*AGROW>
 end
 
 rating_period_n(1) = find(abs(ending_time - (1/3)*cal_duration) == (min(abs(ending_time - (1/3)*cal_duration))));
@@ -109,4 +105,5 @@ rating_period_loc(1) = ending_word_loc(rating_period_n(1));
 rating_period_loc(2) = ending_word_loc(rating_period_n(2));
 
 rating_period_time = ending_time(rating_period_n);
+
 end

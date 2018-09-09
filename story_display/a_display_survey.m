@@ -111,42 +111,42 @@ if whole
             [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
     end
     
-elseif practice1
-    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
-    
-    % Two words
-    Screen('TextSize', theWindow, fontsize(1));
-    DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
-    % Draw scale lines
-    Screen('DrawLines',theWindow, linexy, 3, 255);
-    % scale letter
-    for i = 1:numel(title(1,:))
-        Screen('TextSize', theWindow, fontsize(4));
-        DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[],[],[],...
-            [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+60]);
-        DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],[],[],...
-            [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+60]);
-        DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],[],[],...
-            [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
-        DrawFormattedText(theWindow, double(title{5,i}),'center', 'center', white, [],[],[],[],[],...
-            [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
-    end
-    
-elseif practice2
-    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
-    
-    % Two words
-    Screen('TextSize', theWindow, fontsize(1));
-    DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
-    % Instruction
-    Screen('TextSize', theWindow, fontsize(4));
-    for i = 1:numel(body_prompt)
-        DrawFormattedText(theWindow, double(body_prompt{i}), 'center', H/3+50*i, ...
-            white, [], [], [], [], [], [0 H/4 W*4/5 H*2/3]);
-    end    
-else
-    error('Unknown input');    
-end
+% elseif practice1
+%     Screen(theWindow, 'FillRect', bgcolor, window_rect);
+%     Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
+%     
+%     % Two words
+%     Screen('TextSize', theWindow, fontsize(1));
+%     DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
+%     % Draw scale lines
+%     Screen('DrawLines',theWindow, linexy, 3, 255);
+%     % scale letter
+%     for i = 1:numel(title(1,:))
+%         Screen('TextSize', theWindow, fontsize(4));
+%         DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[],[],[],...
+%             [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+60]);
+%         DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],[],[],...
+%             [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+60]);
+%         DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],[],[],...
+%             [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
+%         DrawFormattedText(theWindow, double(title{5,i}),'center', 'center', white, [],[],[],[],[],...
+%             [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
+%     end
+%     
+% elseif practice2
+%     Screen(theWindow, 'FillRect', bgcolor, window_rect);
+%     Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
+%     
+%     % Two words
+%     Screen('TextSize', theWindow, fontsize(1));
+%     DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
+%     % Instruction
+%     Screen('TextSize', theWindow, fontsize(4));
+%     for i = 1:numel(body_prompt)
+%         DrawFormattedText(theWindow, double(body_prompt{i}), 'center', H/3+50*i, ...
+%             white, [], [], [], [], [], [0 H/4 W*4/5 H*2/3]);
+%     end    
+% else
+%     error('Unknown input');    
+% end
 end

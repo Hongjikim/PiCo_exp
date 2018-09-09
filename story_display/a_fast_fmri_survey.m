@@ -171,7 +171,7 @@ HideCursor;
 
 %% PROMPT SETUP:
 practice_prompt{1} = double('지금부터 스캐너에서 말한 단어의 예시가 화면 위쪽에 순서대로 등장할 것입니다.');
-practice_prompt{2} = double('단어와 함께 몇 가지 질문에 나타날 텐데');
+practice_prompt{2} = double('단어와 함께 몇가지 질문에 나타날텐데');
 practice_prompt{3} = double('각 단어를 떠올린 맥락을 고려하여 각 질문에 솔직하게 응답해주세요.');
 practice_prompt{4} = double('여기서 맥락이란 본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
 practice_prompt{5} = double('혹시 이 단어를 떠올렸을 때의 맥락이 기억나지 않으면 현재 느껴지는 개인적인 감정 혹은 생각에 대해 답해주세요.');
@@ -182,14 +182,15 @@ practice_prompt{6} = double('한번 클릭한 것은 되돌릴 수 없으니 신중하게 클릭해주
 practice_prompt{7} = double('\n잠시 연습을 해보겠습니다. 시작하려면 스페이스를 눌러주세요.');
 
 ready_prompt{1} = double('지금부터 스캐너에서 말한 각 단어가 화면 위쪽에 순서대로 등장할 것입니다.');
-ready_prompt{2} = double('연속된 두 단어 사이에 이어지는 맥락을 고려하여 각 질문에 솔직하게 응답해주세요.');
-ready_prompt{3} = double('여기서 맥락이란 일반적인 단어 사이의 관계를 의미하는 것이 아니라,');
-ready_prompt{4} = double('본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
-ready_prompt{5} = double('한번 클릭한 것은 되돌릴 수 없으니 신중하게 클릭해주세요.');
-ready_prompt{6} = double('');
-ready_prompt{7} = double('설문은 총 6개의 세트로 이루어져 있으며 세트가 끝날 때마다 휴식을 취하셔도 좋습니다.');
-ready_prompt{8} = double('약 2시간 정도 예상되는 설문이므로 마지막까지 집중해서 응답해주시기를 바랍니다.');
-ready_prompt{9} = double('\n시작하려면 스페이스를 눌러주세요.');
+ready_prompt{2} = double('단어와 함께 몇가지 질문이 나타날텐데');
+ready_prompt{3} = double('각 단어를 떠올린 맥락을 고려하여 각 질문에 솔직하게 응답해주세요.');
+ready_prompt{4} = double('여기서 맥락이란 본인이 그 단어를 떠올렸을 당시에 느꼈던 개인적인 감정 혹은 생각을 의미합니다.');
+ready_prompt{5} = double('혹시 이 단어를 떠올렸을 때의 맥락이 기억나지 않으면 현재 느껴지는 개인적인 감정 혹은 생각에 대해 답해주세요..');
+ready_prompt{6} = double('한번 클릭한 것은 되돌릴 수 없으니 신중하게 클릭해주세요');
+ready_prompt{7} = double(' ');
+ready_prompt{8} = double('설문은 총 6개의 세트로 이루어져 있으며 세트가 끝날 때마다 휴식을 취하셔도 좋습니다.');
+ready_prompt{9} = double('약 2시간 정도 예상되는 설문이므로 마지막까지 집중해서 응답해주시기를 바랍니다.');
+ready_prompt{10} = double('\n시작하려면 스페이스를 눌러주세요.');
 
 
 practice_end_prompt = double('잘하셨습니다. 질문이 있으신가요?\n\n시작할 준비가 되셨으면 스페이스를 눌러주세요.');
@@ -212,7 +213,7 @@ if numel(start_line) == 1  % if restart, skip the practice
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
         Screen('TextSize', theWindow, fontsize);
         for i = 1:numel(practice_prompt)
-            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-60*(2-i), white);
+            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-100*(2-i), white);
         end
         Screen('Flip', theWindow);
     end
@@ -332,12 +333,12 @@ while (1)
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize);
     for i = 1:numel(ready_prompt)
-        DrawFormattedText(theWindow, ready_prompt{i},'center', H/3-40*(2-i), white);
+        DrawFormattedText(theWindow, ready_prompt{i},'center', H/3-100*(2-i), white);
     end
     Screen('Flip', theWindow);
 end
 
-for seeds_i = start_line(1):size(words,1) % loop through the seed words
+for seeds_i = start_line(1):size(words',2) % loop through the seed words
     % Set restart point in case of overwrite.
     % Restart target word from 'start_line(2)'
     % just for stopped seed words.
@@ -357,13 +358,13 @@ for seeds_i = start_line(1):size(words,1) % loop through the seed words
         end
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
         for i = 1:numel(ready_prompt)
-            DrawFormattedText(theWindow, ready_prompt{i},'center', H*5/12-40*(2-i), white);
+            DrawFormattedText(theWindow, ready_prompt{i},'center', H*5/12-100*(2-i), white);
         end
         Screen('Flip', theWindow);
     end
     
     
-    for target_i = start_target:numel(words(:,1))-1 % loop through the response words (40)
+    for target_i = start_target:size(words',1) % loop through the response words (40) %edit
         
         %% FIRST question : Self-relevance, Valence, Time, Vividness, Safety/Threat
         z= randperm(6);
@@ -395,7 +396,7 @@ for seeds_i = start_line(1):size(words,1) % loop through the seed words
                     end
                     
                     % display scales and cursor
-                    a_display_survey(z, seeds_i, target_i, words,'whole');
+                    a_display_survey(z, seeds_i, target_i, words','whole');
                     Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
                     Screen('Flip', theWindow);
                     
@@ -410,7 +411,7 @@ for seeds_i = start_line(1):size(words,1) % loop through the seed words
                             survey.dat{target_i, seeds_i}{barsize(5,j)}.time(end) - ...
                             survey.dat{target_i, seeds_i}{barsize(5,j)}.time(1);
                         
-                        a_display_survey(z, seeds_i, target_i, words,'whole');
+                        a_display_survey(z, seeds_i, target_i, words','whole');
                         Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
                         Screen('Flip', theWindow);
                         
@@ -445,7 +446,7 @@ for seeds_i = start_line(1):size(words,1) % loop through the seed words
         
         while(1)
             % draw scale
-            a_display_survey(z, seeds_i, target_i, words,'whole');
+            a_display_survey(z, seeds_i, target_i, words','whole');
             
             % Track Mouse coordinate
             [x, y, button] = GetMouse(theWindow);

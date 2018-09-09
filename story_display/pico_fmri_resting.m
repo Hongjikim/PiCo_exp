@@ -82,10 +82,10 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color testmode % lb tb recsize barsize rec; % rating scale
 
 % Screen setting
-bgcolor = 100;
+bgcolor = 50;
 
 % if testmode == true
 %     window_ratio = 1.6;
@@ -95,7 +95,6 @@ bgcolor = 100;
 
 text_color = 255;
 fontsize = 42; %60?
-%fontsize = 24; %30
 
 screens = Screen('Screens');
 window_num = screens(end);
@@ -121,17 +120,17 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, ~]=Screen('OpenWindow',0, bgcolor, window_rect);%[0 0 2560/2 1440/2]
+    [theWindow, ~] = Screen('OpenWindow',0, bgcolor, window_rect/1.5);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-    font = 'NanumBarunGothic.ttf'; % check
+    font = 'NanumBarunGothic'; % check
     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize);
-    if ~testmode, HideCursor; end 
+    if ~testmode, HideCursor; end
     
     %% SETUP: Eyelink
     % need to be revised when the eyelink is here.
     if USE_EYELINK
-        edf_filename = ['E_F' sid(5:end), '_' sprintf('%.1d', ft_num)]; % name should be equal or less than 8 
+        edf_filename = ['E_F' sid(5:end), '_' sprintf('%.1d', ft_num)]; % name should be equal or less than 8
         % E_F for Free_thinking
         edfFile = sprintf('%s.EDF', edf_filename);
         eyelink_main(edfFile, 'Init');
@@ -156,12 +155,12 @@ try
             end
             
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            ready_prompt = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있으나 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.');
+            ready_prompt = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있습니다. 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.');
             DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
             Screen('Flip', theWindow);
             
         end
-        WaitSecs(0.1);
+        WaitSecs(0.2);
         while (1)
             [~,~,keyCode] = KbCheck;
             
@@ -178,8 +177,58 @@ try
             
         end
         
+        WaitSecs(0.2);
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('space'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            start_msg = double('이번 세션은 자유 생각 세션입니다. \n 화면에 + 표시가 나타나면, 자유 생각을 시작하세요. \n + 표시가 사라질 때마다 지시문에 답변을 해주세요.\n\n 연습을 한번 해보겠습니다.') ;
+            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.5);
+            Screen('Flip', theWindow);
+            
+        end
+        
+        WaitSecs(0.2);
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('space'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요. \n 단어나 구를 말할때는 큰소리로 또박또박 말씀해주세요.') ;
+            DrawFormattedText(theWindow, FT_msg,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
+            Screen('Flip', theWindow);
+            
+        end
+        
+        WaitSecs(0.2);
+        while (1)
+            [~,~,keyCode] = KbCheck;
+            
+            if keyCode(KbName('space'))==1
+                break
+            elseif keyCode(KbName('q'))==1
+                abort_experiment('manual');
+            end
+            
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            FT_msg = double('잘하셨습니다. 세션을 시작하겠습니다.') ;
+            DrawFormattedText(theWindow, FT_msg,'center', 'center', white); %'center', 'textH'
+            Screen('Flip', theWindow);
+            
+        end
+        WaitSecs(0.2);
     end
-  
+    
     %% Start FT session
     
     %INPUT FROM THE SCANNER
@@ -194,7 +243,7 @@ try
         
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
         ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
+        DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
         Screen('Flip', theWindow);
         
     end
@@ -220,24 +269,24 @@ try
     
     
     %% EYELINK AND BIOPAC START
-            
-            if USE_EYELINK
-                Eyelink('StartRecording');
-                data.eyetracker_starttime = GetSecs; % eyelink timestamp
-                Eyelink('Message','FT Run start');
-            end
-            
-            if USE_BIOPAC
-                data.biopac_starttime = GetSecs; % biopac timestamp
-                BIOPAC_trigger(ljHandle, biopac_channel, 'on');
-                waitsec_fromstarttime(data.biopac_starttime, 1);
-                BIOPAC_trigger(ljHandle, biopac_channel, 'off');
-            end
-            
-            %% START FREE THINKING
+    
+    if USE_EYELINK
+        Eyelink('StartRecording');
+        data.eyetracker_starttime = GetSecs; % eyelink timestamp
+        Eyelink('Message','FT Run start');
+    end
+    
+    if USE_BIOPAC
+        data.biopac_starttime = GetSecs; % biopac timestamp
+        BIOPAC_trigger(ljHandle, biopac_channel, 'on');
+        waitsec_fromstarttime(data.biopac_starttime, 1);
+        BIOPAC_trigger(ljHandle, biopac_channel, 'off');
+    end
+    
+    %% START FREE THINKING
     
     % 6 seconds for being ready
-    start_msg = double('화면에 + 표시가 나타나면, 자유 생각을 시작하세요. \n + 표시가 사라질 때 마다 지시문에 답변을 해주세요.') ;
+    start_msg = double('  ') ;
     DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.3);
     Screen('Flip', theWindow);
     
@@ -258,18 +307,18 @@ try
     data = free_thinking(data, ft_num); %free thinking without story!
     save(data.datafile, 'data', '-append');
     
-        
+    
     nTime = GetSecs;
     while GetSecs - nTime <5
-        run_end_msg = double('이번 세션이 끝났습니다. 나타나는 질문들에 답변해주세요.') ;
-        DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color);
+        run_end_msg = double('이번 세션이 끝났습니다. \n 나타나는 질문들에 답변해주세요.') ;
+        DrawFormattedText(theWindow, run_end_msg, 'center', 'center', text_color, [], [], [], 1.5);
         Screen('Flip', theWindow);
     end
     
     data.FTstarttime_getsecs = GetSecs;
     save(data.datafile, 'data', '-append');
     
-    data = pico_post_run_survey_resting(data, ft_num); %free thinking for story!
+    data = pico_post_run_survey_resting(data); %free thinking for story!
     save(data.datafile, 'data', '-append');
     
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -286,19 +335,28 @@ try
     if USE_BIOPAC
         data.biopac_endtime = GetSecs; % biopac timestamp
         BIOPAC_trigger(ljHandle, biopac_channel, 'on');
-        waitsec_fromstarttime(data.biopac_endtime, 0.1);
+        if run_n == 1
+            ending_trigger = 0.1;
+        else
+            ending_trigger = 0.7;
+        end
+        waitsec_fromstarttime(data.biopac_endtime, ending_trigger); % BIOPAC TRIGGER for FT run = 0.1, 0.7
         BIOPAC_trigger(ljHandle, biopac_channel, 'off');
     end
     
     data.FTendtime_getsecs = GetSecs;
     save(data.datafile, 'data', '-append');
     
-     while (1)
+    while (1)
         [~,~,keyCode] = KbCheck;
-        if keyCode(KbName('q'))==1
+        
+        if keyCode(KbName('space'))==1
             break
+        elseif keyCode(KbName('q'))==1
+            abort_experiment('manual');
         end
     end
+    
     
     ShowCursor();
     Screen('Clear');
@@ -326,7 +384,7 @@ end
 function data = free_thinking(data, ft_num)
 
 global theWindow W H; % window property
-global fontsize window_rect text_color  textH % lb tb recsize barsize rec; % rating scale
+global fontsize window_rect text_color textH testmode % lb tb recsize barsize rec; % rating scale
 
 fixation_point = double('+') ;
 DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
@@ -336,16 +394,23 @@ resting_sTime = GetSecs;
 data.resting{ft_num}.fixation_start_time = resting_sTime;
 
 rng('shuffle')
-sampling_time = [60 120 180 240 300] + randi(10,1,5) - 5;
+if testmode == true
+    sampling_time = [10 20] + randi(10,1,5);
+    resting_total_time = 30;
+else
+    sampling_time = [60 120 180 240 300] + randi(10,1,5) - 5;
+    resting_total_time = 360;
+end
+
 data.resting{ft_num}.sampling_time = sampling_time;
 
 
-while GetSecs - resting_sTime < 360
+while GetSecs - resting_sTime < resting_total_time
     for i = 1:5
         while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
             data.resting{ft_num}.start_Sampling{i} = GetSecs;
-            FT_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-            DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color);
+            FT_msg = double('지금 무슨 생각을 하고 있는지 \n단어나 구로 말해주세요.') ;
+            DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color, [], [], [], 1.5);
             Screen('Flip', theWindow);
         end
         data.resting{ft_num}.end_Sampling{i} = GetSecs;
@@ -365,8 +430,8 @@ data.resting{ft_num}.fixation_end_time = GetSecs;
 
 
 while GetSecs - data.resting{ft_num}.fixation_end_time <5
-    end_msg = double('지금 무슨 생각을 하고 있는지 단어나 구로 말해주세요.') ;
-    DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color);
+    end_msg = double('지금 무슨 생각을 하고 있는지 \n단어나 구로 말해주세요.') ;
+    DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color, [], [], [], 1.5);
     Screen('Flip', theWindow);
 end
 
@@ -400,11 +465,11 @@ end
 
 
 
-function data = pico_post_run_survey_resting(data, ft_num, varargin)
+function data = pico_post_run_survey_resting(data, varargin)
 
 global theWindow W H; % window property
 global white red orange blue bgcolor tb ; % color
-global fontsize window_rect text_color 
+global fontsize window_rect text_color
 tb = H/5;
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
@@ -413,43 +478,66 @@ for i = 1:5
 end
 
 save(data.datafile, 'data', '-append');
-    
+
 % QUESTION
-    title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
-        '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
-        '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
-        '중립', '', '현재', '', '중립', '';
-        '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
-    
-    linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
-        H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
-    linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
-        H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
-    rng('shuffle');
-    z = randperm(5);
-    
-   
-    for i = 1:(numel(title(1,:))-1)
-        if mod(z(i),2) % odd number, valence, time, safe&threat
-            question_start = GetSecs;
-            SetMouse(W/2, H/2);
+title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
+    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
+    '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
+    '중립', '', '현재', '', '중립', '';
+    '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
+
+linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
+linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
+rng('shuffle');
+z = randperm(5);
+
+
+for i = 1:(numel(title(1,:))-1)
+    if mod(z(i),2) % odd number, valence, time, safe&threat
+        question_start = GetSecs;
+        SetMouse(W/2, H/2);
+        
+        while(1)
+            % Track Mouse coordinate
+            [mx, ~, button] = GetMouse(theWindow);
             
-            while(1)
-                % Track Mouse coordinate
-                [mx, ~, button] = GetMouse(theWindow);
+            x = mx;
+            y = H/2;
+            if x < W/4, x = W/4;
+            elseif x > W*3/4, x = W*3/4;
+            end
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            Screen('DrawLines',theWindow, linexy1, 3, 255);
+            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
+            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
+            
+            Screen('DrawDots', theWindow, [x;y], 12, orange, [0 0], 1); % check size
+            Screen('Flip', theWindow);
+            
+             if GetSecs - question_start >= 5
+                button(1) = true;
+            end
+            
+            if button(1)
+                rating{2,z(i)} = (x-W/2)/(W/4);
+                rating{3,z(i)} = GetSecs-question_start;
+                rrtt = GetSecs;
                 
-                x = mx;
-                y = H/2;
-                if x < W/4, x = W/4;
-                elseif x > W*3/4, x = W*3/4;
-                end
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
                 Screen('DrawLines',theWindow, linexy1, 3, 255);
                 DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
+                
                 DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
                 DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
@@ -457,63 +545,54 @@ save(data.datafile, 'data', '-append');
                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
                     [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
                 
-                Screen('DrawDots', theWindow, [x;y], 12, orange, [0 0], 1); % check size
+                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
                 Screen('Flip', theWindow);
-                
-                if button(1)
-                    rating{2,z(i)} = (x-W/2)/(W/4);
-                    rating{3,z(i)} = GetSecs-question_start;
-                    rrtt = GetSecs;
-                    
-                    Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                    Screen('DrawLines',theWindow, linexy1, 3, 255);
-                    DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                    
-                    DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-                    DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                        [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-                    
-                    Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-                    Screen('Flip', theWindow);
-%                     if USE_EYELINK
-%                         Eyelink('Message','Rest Question response');
-%                     end
-                    waitsec_fromstarttime(rrtt, 0.5);
-                    rating{4,z(i)} = GetSecs;
-                    break;
-                end
+                %                     if USE_EYELINK
+                %                         Eyelink('Message','Rest Question response');
+                %                     end
+                waitsec_fromstarttime(rrtt, 0.5);
+                rating{4,z(i)} = GetSecs;
+                break;
+            end
+        end
+        
+    else   % even number, self-relevance, vividness
+        question_start = GetSecs;
+        SetMouse(W*3/8, H/2);
+        trajectory = [];
+        trajectory_time = [];
+        
+        j = 0;
+        
+        while(1)
+            % Track Mouse coordinate
+            [mx, ~, button] = GetMouse(theWindow);
+            
+            x = mx;
+            y = H/2;
+            if x < W*3/8, x = W*3/8;
+            elseif x > W*5/8, x = W*5/8;
             end
             
-        else   % even number, self-relevance, vividness
-            question_start = GetSecs;
-            SetMouse(W*3/8, H/2);
+            Screen(theWindow, 'FillRect', bgcolor, window_rect);
+            Screen('DrawLines',theWindow, linexy2, 3, 255);
+            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
             
-            while(1)
-                % Track Mouse coordinate
-                [mx, ~, button] = GetMouse(theWindow);
-                
-                x = mx;
-                y = H/2;
-                if x < W*3/8, x = W*3/8;
-                elseif x > W*5/8, x = W*5/8;
-                end
-                
-                Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                Screen('DrawLines',theWindow, linexy2, 3, 255);
-                DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                
-                DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-                
-                Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
-                Screen('Flip', theWindow);
+            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
+            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
+                [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
+            
+            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            Screen('Flip', theWindow);
+            
+            trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
+            trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
+            
+            if trajectory_time(end) >= 5  % maximum time of rating is 5s
+                button(1) = true;
                 
                 if button(1)
                     rating{2,z(i)} = (x-W*3/8)/(W/4);
@@ -533,10 +612,11 @@ save(data.datafile, 'data', '-append');
                     
                     Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
                     Screen('Flip', theWindow);
-%                     if USE_EYELINK
-%                         Eyelink('Message','Rest Question response');
-%                     end
+                    %                     if USE_EYELINK
+                    %                         Eyelink('Message','Rest Question response');
+                    %                     end
                     waitsec_fromstarttime(rrtt, 0.5);
+                    %waitsec_fromstarttime(question_start, 5);
                     rating{4,z(i)} = GetSecs;
                     break;
                 end
@@ -544,21 +624,23 @@ save(data.datafile, 'data', '-append');
         end
     end
     WaitSecs(.1);
-
-    data.rating = rating ;
-
-save(data.datafile, 'data', '-append');
-
-    while (1)
-        [~,~,keyCode] = KbCheck;
-
-        if keyCode(KbName('space'))==1
-            break
-        elseif keyCode(KbName('q'))==1
-            abort_experiment('manual');
-        end
-    end
-
     
+    data.rating = rating ;
+    
+    save(data.datafile, 'data', '-append');
+    
+    % while (1)
+    %     [~,~,keyCode] = KbCheck;
+    %
+    %     if keyCode(KbName('space'))==1
+    %         break
+    %     elseif keyCode(KbName('q'))==1
+    %         abort_experiment('manual');
+    %     end
+    % end
+    
+    
+end
+
 end
 
