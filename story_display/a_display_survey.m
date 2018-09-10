@@ -1,6 +1,6 @@
 function a_display_survey(z, seeds_i, target_i, words, varargin)
 
-global W H white theWindow window_rect bgcolor bodymap recsize rec linexy barsize; 
+global W H white theWindow window_rect bgcolor bodymap recsize rec linexy barsize;
 %%
 whole = false;
 practice1 = false;
@@ -30,18 +30,18 @@ end
 % barsize=[W*340/1280, W*180/1280, W*340/1280, W*180/1280, W*340/1280, 0;
 %         10, 10, 10, 10, 10, 0; 10, 0, 10, 0, 10, 0;
 %         10, 10, 10, 10, 10, 0; 1, 2, 3, 4, 5, 0]; %긴거 짧은거
-% rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2); 
-%     lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표 
+% rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
+%     lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표
 
 title={'','', '','', '', '';
-       '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '';
-       '중립', '', '현재', '', '중립', '';
-       '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','';
-       '단어에서 느껴지는 감정', '단어가 자신과 관련이 있는 정도', '단어가 가장 관련이 있는 자신의 시간', ...
-       '단어가 어떤 상황이나 장면을\n얼마나 생생하게 떠올리게 하는지', '단어가 안전 또는 위협을\n의미하거나 느끼게 하는지', '';
-       '그 생각이 일으킨 감정은?', '그 생각이 나와 관련이 있는 정도는?', '그 생각이 가장 관련이 있는 자신의 시간?', ...
-       '그 생각이 어떤 상황이나 장면을\n생생하게 떠올리게 했나요?', '그 생각이 안전 또는 위협을\n의미하거나 느끼게 했나요?',''};
-   
+    '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '';
+    '중립', '', '현재', '', '중립', '';
+    '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','';
+    '단어에서 느껴지는 감정', '단어가 자신과 관련이 있는 정도', '단어가 가장 관련이 있는 자신의 시간', ...
+    '단어가 어떤 상황이나 장면을\n얼마나 생생하게 떠올리게 하는지', '단어가 안전 또는 위협을\n의미하거나 느끼게 하는지', '';
+    '그 생각이 일으킨 감정은?', '그 생각이 나와 관련이 있는 정도는?', '그 생각이 가장 관련이 있는 자신의 시간?', ...
+    '그 생각이 어떤 상황이나 장면을\n생생하게 떠올리게 했나요?', '그 생각이 안전 또는 위협을\n의미하거나 느끼게 했나요?',''};
+
 body_prompt = {'해당 단어를 떠올릴 때 활발해지거나 빨라지는 몸의 부분은 빨간색으로,'
     '활동이 약해지거나 느려지는 것 같은 몸의 부분은 파란색으로 색칠해주세요.';
     '한 단어에 대해 빨간색과 파란색 모두 칠할 수 있고 한번 칠해진 곳은 지울 수 없습니다.';
@@ -80,10 +80,10 @@ end
 
 %% locations of the two words
 %     interval = 150;
-    Screen('TextSize', theWindow, 30);
-    response_W(1) = Screen(theWindow, 'DrawText', double(words{target_i,seeds_i}), 0, 0);
-    
-    x(1) = W/2 - response_W(1)/2;
+Screen('TextSize', theWindow, 30);
+response_W(1) = Screen(theWindow, 'DrawText', double(words{target_i,seeds_i}), 0, 0);
+
+x(1) = W/2 - response_W(1)/2;
 fontsize = [35, 55, 27, 23]; % Word1, W2, title(1,:), title(2~4,:)
 
 %%
@@ -111,42 +111,42 @@ if whole
             [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
     end
     
-% elseif practice1
-%     Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%     Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
-%     
-%     % Two words
-%     Screen('TextSize', theWindow, fontsize(1));
-%     DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
-%     % Draw scale lines
-%     Screen('DrawLines',theWindow, linexy, 3, 255);
-%     % scale letter
-%     for i = 1:numel(title(1,:))
-%         Screen('TextSize', theWindow, fontsize(4));
-%         DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[],[],[],...
-%             [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+60]);
-%         DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],[],[],...
-%             [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+60]);
-%         DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],[],[],...
-%             [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
-%         DrawFormattedText(theWindow, double(title{5,i}),'center', 'center', white, [],[],[],[],[],...
-%             [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
-%     end
-%     
-% elseif practice2
-%     Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%     Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
-%     
-%     % Two words
-%     Screen('TextSize', theWindow, fontsize(1));
-%     DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
-%     % Instruction
-%     Screen('TextSize', theWindow, fontsize(4));
-%     for i = 1:numel(body_prompt)
-%         DrawFormattedText(theWindow, double(body_prompt{i}), 'center', H/3+50*i, ...
-%             white, [], [], [], [], [], [0 H/4 W*4/5 H*2/3]);
-%     end    
-% else
-%     error('Unknown input');    
-% end
+elseif practice1
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
+    
+    % Two words
+    Screen('TextSize', theWindow, fontsize(1));
+    DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
+    % Draw scale lines
+    Screen('DrawLines',theWindow, linexy, 3, 255);
+    % scale letter
+    for i = 1:numel(title(1,:))
+        Screen('TextSize', theWindow, fontsize(4));
+        DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[],[],[],...
+            [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+60]);
+        DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],[],[],...
+            [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+60]);
+        DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],[],[],...
+            [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
+        DrawFormattedText(theWindow, double(title{5,i}),'center', 'center', white, [],[],[],[],[],...
+            [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
+    end
+    
+elseif practice2
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    Screen('PutImage', theWindow, bodymap, window_rect); % put bodymap image on screen
+    
+    % Two words
+    Screen('TextSize', theWindow, fontsize(1));
+    DrawFormattedText(theWindow, double(words{target_i,seeds_i}), x(1), H/7, white, [], [], [], 1.5);
+    % Instruction
+    Screen('TextSize', theWindow, fontsize(4));
+    for i = 1:numel(body_prompt)
+        DrawFormattedText(theWindow, double(body_prompt{i}), 'center', H/3+50*i, ...
+            white, [], [], [], [], [], [0 H/4 W*4/5 H*2/3]);
+    end
+else
+    error('Unknown input');
+end
 end

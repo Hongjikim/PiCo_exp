@@ -213,7 +213,7 @@ if numel(start_line) == 1  % if restart, skip the practice
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
         Screen('TextSize', theWindow, fontsize);
         for i = 1:numel(practice_prompt)
-            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-100*(2-i), white);
+            DrawFormattedText(theWindow, practice_prompt{i},'center', H/2-60*(2-i), white);
         end
         Screen('Flip', theWindow);
     end
@@ -333,7 +333,7 @@ while (1)
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize);
     for i = 1:numel(ready_prompt)
-        DrawFormattedText(theWindow, ready_prompt{i},'center', H/3-100*(2-i), white);
+        DrawFormattedText(theWindow, ready_prompt{i},'center', H/3-60*(2-i), white);
     end
     Screen('Flip', theWindow);
 end

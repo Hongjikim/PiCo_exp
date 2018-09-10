@@ -33,9 +33,7 @@ pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
 pico_fmri_resting(2);
 
 %% post-scan survey
-pico_post_survey(subjecdir); % read the subject's word data in the directory
-
-words = pico_wholewords;           % subjectID = F010
+pico_ws       % subjectID = F010
 
     %%
     words = pico_wholewords;
