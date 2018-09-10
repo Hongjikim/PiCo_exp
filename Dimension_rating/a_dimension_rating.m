@@ -1,4 +1,4 @@
-function data = dimension_rating(dimension_type, subject_ID, subject_number)
+function data = dimension_rating(dimension_type)
 
 %%
 % 1) 시작위치가 거기가 아닐텐데..
@@ -7,8 +7,8 @@ function data = dimension_rating(dimension_type, subject_ID, subject_number)
 % 3) instructoin 넣기
 % 5) instruction 에 맞춰서 axis변경
 %%
-%subject_ID = input('Subject ID?:', 's');
-%subject_number = input('Subject number?:');
+subject_ID = input('Subject ID?:', 's');
+subject_number = input('Subject number?:');
 start_option = 2;
 
 % from generate_ts.. use this to load all the story text for dimensions
@@ -81,7 +81,7 @@ Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
 if strcmp(dimension_type, 'practice')
     the_text = 'sample_3.txt';
 else
-     stories = filenames(fullfile('/Users/hongji/Dropbox/PiCo_git/Dimension_rating/data_kjs', '*.txt'));
+     stories = filenames(fullfile('/Users/hongji/Desktop/hongji 2/PiCo/Dimension_rating/data_kjs', '*.txt'));
     [~, the_text] = fileparts(stories{subject_number})
      the_text = [the_text '.txt']
      %stories(subject_number); % the_text = 'cwk_1.txt'; % edit
