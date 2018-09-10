@@ -457,18 +457,14 @@ data.resting{story_num}.fixation_start_time = resting_sTime;
 
 rng('shuffle')
 
-if testmode
+% edit
    sampling_time = [10 20] + randi(10,1,2) - 5;
    story_ft_time = 30;
-else
-    sampling_time = [50 100] + randi(10,1,2) - 5;
-    story_ft_time = 150;
-end
+
+   %     sampling_time = [50 100] + randi(10,1,2) - 5;
+%     story_ft_time = 150;
 
 data.resting{story_num}.sampling_time = sampling_time;
-
-
-
 
 while GetSecs - resting_sTime < story_ft_time
     for i = 1:2
@@ -693,8 +689,8 @@ while(1)
         Screen('TextSize', theWindow, fontsize(2));
         Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('DrawLines',theWindow, xy, 5, 255);
-        DrawFormattedText(theWindow, intro_prompt1,'center', H/4, white);
-        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
+        DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
+        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white);
         % Draw scale letter
         Screen('TextSize', theWindow, fontsize(1));
         DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
@@ -709,6 +705,7 @@ while(1)
         concentration = (x-W/3)/(W/3);  % 0~1
         
         WaitSecs(0.3);
+        waitsec_fromstarttime(starttime, cqT);
         
         break;
     end
@@ -770,8 +767,8 @@ while(1)
         Screen('TextSize', theWindow, fontsize(2));
         Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('DrawLines',theWindow, xy, 5, 255);
-        DrawFormattedText(theWindow, intro_prompt1,'center', H/4, white);
-        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+40, white);
+        DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
+        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white);
         % Draw scale letter
         Screen('TextSize', theWindow, fontsize(1));
         DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
@@ -786,6 +783,7 @@ while(1)
         familiarity = (x-W/3)/(W/3);  % 0~1
         
         WaitSecs(0.3);
+        waitsec_fromstarttime(starttime, cqT);
         
         break;
     end
@@ -887,6 +885,7 @@ for i = 1:(numel(title(1,:))-1)
                 Screen('Flip', theWindow);
                 waitsec_fromstarttime(rrtt, 0.5);
                 post_run.rating{4,z(i)} = GetSecs;
+                waitsec_fromstarttime(question_start, rT_post);
                 break;
             end
         end
@@ -947,6 +946,7 @@ for i = 1:(numel(title(1,:))-1)
                 end
                 waitsec_fromstarttime(rrtt, 0.5);
                 post_run.rating{4,z(i)} = GetSecs;
+                waitsec_fromstarttime(question_start, rT_post);
                 break;
             end
         end
@@ -989,7 +989,7 @@ linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
     H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
 
 question_start = GetSecs;
-% SetMouse(W/2, H/2);
+SetMouse(W/2, H/2);
 
 while(1)
     % Track Mouse coordinate
@@ -1041,6 +1041,7 @@ while(1)
         Screen('Flip', theWindow);
         waitsec_fromstarttime(rrtt, 0.5);
         int_valence.rating{4} = GetSecs;
+        waitsec_fromstarttime(question_start, rT_valence);
         break;
     end
 end

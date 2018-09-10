@@ -11,7 +11,7 @@ cd('/Users/hongji/Dropbox/PiCo_git/data');
 ts= pico_fmri_generate_ts_indi;  %error 나타나는 위치 질문
 
 %% resting
-pico_fmri_resting('test'); % 'biopac', 'eye'); %,'testmode')
+pico_fmri_resting(); % 'biopac', 'eye'); %,'testmode')
 
 %% run 1 %line100
 % run_i = 1;s
