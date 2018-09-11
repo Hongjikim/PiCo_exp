@@ -220,6 +220,7 @@ if numel(start_line) == 1  % if restart, skip the practice
     
     z = randperm(6);
     barsize = barsizeO(:,z);
+    
     for j=1:numel(z)
         if ~barsize(5,j) == 0
             if mod(barsize(5,j),2) ==0
