@@ -219,14 +219,16 @@ try
             
             data.runscan_starttime = GetSecs; % run start timestamp
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            DrawFormattedText(theWindow, double('시작합니다...'), 'center', 'center', white);
-            Screen('Flip', theWindow);
             
-            waitsec_fromstarttime(data.runscan_starttime, 4); % For disdaq
+            Screen('TextSize', theWindow, fontsize(2));
+            start_msg = double('곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요.') ;
+            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.5);
+            Screen('Flip', theWindow);
+            waitsec_fromstarttime(data.runscan_starttime, 4); 
+            
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
-            
-            waitsec_fromstarttime(data.runscan_starttime, 10); % For disdaq
+            waitsec_fromstarttime(data.runscan_starttime, 8); % For disdaq (total disdaq = 8 seconds)
             
             %% EYELINK AND BIOPAC START
             
@@ -246,30 +248,16 @@ try
             %% START FIRST STORY
             
             % 6 seconds for being ready
-            Screen('TextSize', theWindow, fontsize(2));
-            start_msg = double('곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요.') ;
-            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.5);
-            Screen('Flip', theWindow);
-            
-            waitsec_fromstarttime(data.runscan_starttime, 14);
-            
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
             
-            waitsec_fromstarttime(data.runscan_starttime, 17);
+            waitsec_fromstarttime(data.runscan_starttime, 12); % baseline (blank) = 4 seconds
             
         else
-            % Start second display
-            Screen('TextSize', theWindow, fontsize(2));
-            start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
-            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color,  [], [], [], 1.5);
-            Screen('Flip', theWindow);
-            sTime_2 = GetSecs;
-            waitsec_fromstarttime(sTime_2, 4)
-            
+           sTime_2 = GetSecs;
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
-            waitsec_fromstarttime(sTime_2, 7)
+            waitsec_fromstarttime(sTime_2, 4)
         end
         
         data.loop_start_time{story_num} = GetSecs;
@@ -951,6 +939,17 @@ for i = 1:(numel(title(1,:))-1)
             end
         end
     end
+end
+
+if story_num == 1
+    % Start second display
+    Screen('TextSize', theWindow, fontsize(2));
+    start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
+    DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color,  [], [], [], 1.5);
+    Screen('Flip', theWindow);
+    Qend_time = GetSecs;
+    waitsec_fromstarttime(Qend_time, 4)
+    
 end
 
 WaitSecs(.1);
