@@ -1,4 +1,4 @@
-function [out, cal_duration, my_length, rating_period_loc, rating_period_time] = pico_text_duration(fname)
+function [out, cal_duration, my_length, rating_period_loc, rating_period_time] = pico_text_duration_test(fname)
 
 % out = pico_text_duration(fname)
 %
@@ -61,9 +61,6 @@ for k = 1:length(ending_loc)
     end
 end
 
-final_duration = 1000;
-
-while final_duration > 225 || final_duration < 220
     
     time_interval = rand(1,my_length)*.7; % *0.1
     cal_duration = 0;
@@ -93,27 +90,11 @@ while final_duration > 225 || final_duration < 220
         out{i}.msg_double = msg;
     end
     
-    final_duration = cal_duration;
-    
-end
 
 % fprintf('\n*************************\ntext title: %s', Filename{s_num});
 % fprintf('\ntotal time: %.2f seconds \n', sum(duration(:,2)));
 % fprintf('total words: %.f words \n*************************\n', my_length);
 
 
-% Valence Rating Setting
-for i = 1:numel(ending_loc)
-    ending_word_loc(i) = find(space_loc == ending_loc(i)+1) - 1;
-    ending_time(i) = out{ending_word_loc(i)}.accumulated_duration ; %#ok<*AGROW>
-end
-
-rating_period_n(1) = find(abs(ending_time - (1/3)*cal_duration) == (min(abs(ending_time - (1/3)*cal_duration))));
-rating_period_n(2) = find(abs(ending_time - (2/3)*cal_duration) == (min(abs(ending_time - (2/3)*cal_duration))));
-
-rating_period_loc(1) = ending_word_loc(rating_period_n(1));
-rating_period_loc(2) = ending_word_loc(rating_period_n(2));
-
-rating_period_time = ending_time(rating_period_n);
 
 end

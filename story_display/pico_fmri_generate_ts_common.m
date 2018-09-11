@@ -11,6 +11,8 @@ function [ts] = pico_fmri_generate_ts_common
 %
 %
 %%
+clf;
+
 datdir = '/Users/hongji/Dropbox/PiCo_git/data';  % edit 'data'
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
@@ -58,19 +60,18 @@ for story_i = 1:numel(stories)
     hold on; 
     plot(story_i, cal_duration, 'o')
     xlim([0 11])
-    ylim([150 350])
+    ylim([200 250])
     %ylim([0 2])
 end
-plot1 = plot([0 11], [240 240]);
-plot2 = plot([0 22], [270 270]);
- legend([plot1, plot2], '240','270')
- 
+plot1 = plot([0 22], [215 215]);
+plot2 = plot([0 11], [220 220]);
+plot3 = plot([0 22], [225 225]);
+plot4 = plot([0 11], [230 230]);
+legend([plot1, plot2, plot3, plot4], '215','220', '225', '230')
+
 for story_i = 1:numel(stories)
     fprintf('story order %d: %s\n', story_i, out{story_i}{1}.story_name)
 end
-
-
-
 
 %% add out into ts
 
@@ -96,7 +97,7 @@ ts{run_i}{2} = out{10};
 
 %% save ts
 nowtime = clock;
-savename = fullfile(subject_dir, ['common_ts' date '_' num2str(nowtime(4)) '_' num2str(nowtime(5)) '.mat']);
-save(savename, 'ts');
+savename = fullfile(subject_dir, ['common_ts_' date '_' num2str(nowtime(4)) '_' num2str(nowtime(5)) '.mat']);
+save(savename, 'out');
 
 end

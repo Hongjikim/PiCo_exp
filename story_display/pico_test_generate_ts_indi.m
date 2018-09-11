@@ -1,4 +1,4 @@
-function [ts] = pico_fmri_generate_ts_indi
+function [ts] = pico_test_generate_ts_indi(varargin)
 % 
 % function [ts] = pico_fmri_generate_ts
 % 
@@ -18,6 +18,22 @@ sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 
 stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
+
+%% VARAGIN 
+shortmode = false;
+longmode = false;
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            % functional commands
+            case {'test', 'short'}
+                shortmode = true;
+            case {'long'}
+                longmode = true; 
+        end
+    end
+end
 
 %% story order (randomize)
 
@@ -48,32 +64,38 @@ stories = stories(rand_order);
 
 %% calculate and print out text duration
 
-load('common_ts_12-Sep-2018_0_24.mat');
-common_out = out;
+%load('common_ts09-Sep-2018_16_50.mat');
+% common_out = out;
 
 for story_i = 1:10
-    if sum(story_i == find(rand_order<5)) == 1
-        [out{story_i}, cal_duration, my_length, rating_period_loc, rating_period_time] = pico_text_duration(stories{story_i});
+    %if sum(story_i == find(rand_order<5)) == 1
+        if shortmode == true
+            [out{story_i}, cal_duration, my_length] = pico_text_duration_test(stories{story_i});
+        elseif longmode == true
+            [out{story_i}, cal_duration, my_length] = pico_text_duration(stories{story_i});
+        end
+        
         [~, story_name] = fileparts(stories{story_i});
         out{story_i}{1}.story_name = story_name;
         out{story_i}{1}.story_time = cal_duration;
-        out{story_i}{1}.rating_period_loc = rating_period_loc;
-        out{story_i}{1}.rating_period_time = rating_period_time;
+%        out{story_i}{1}.rating_period_loc = rating_period_loc;
+%       out{story_i}{1}.rating_period_time = rating_period_time;
         fprintf('\n*************************\n text file: %s', stories{story_i});
         fprintf('\n total time: %.2f seconds', cal_duration);
         fprintf('\n total words: %.f words \n*************************\n', my_length);
         plot(story_i, cal_duration, 'o')
         hold on;
-    else
-        out{story_i} = common_out{rand_order(story_i)};
-        plot(story_i, common_out{rand_order(story_i)}{1}.story_time, 'o')
-        hold on;
-    end
+%     %else
+%         out{story_i} = common_out{rand_order(story_i)};
+%         plot(story_i, common_out{rand_order(story_i)}{1}.story_time, 'o')
+%         hold on;
+%     end
 end
 
 xlim([0 11])
-ylim([200 250])
+ylim([200 270])
 %ylim([0 2])
+
 
 plot1 = plot([0 22], [215 215]);
 plot2 = plot([0 11], [220 220]);
@@ -109,8 +131,8 @@ ts{run_i}{1} = out{9};
 ts{run_i}{2} = out{10};
 
 %% save ts
-nowtime = clock;
-savename = fullfile(subject_dir, ['trial_sequence_' date '_' num2str(nowtime(4)) '_' num2str(nowtime(5)) '.mat']);
-save(savename, 'ts');
+% nowtime = clock;
+% savename = fullfile(subject_dir, ['trial_sequence_' date '_' num2str(nowtime(4)) '_' num2str(nowtime(5)) '.mat']);
+% save(savename, 'ts');
 
 end

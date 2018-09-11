@@ -149,45 +149,6 @@ try
         waitsec_fromstarttime(GetSecs, .5);
     end
     
-    %     %% PRACTICE: emotion rating
-    %     practice_time = GetSecs;
-    %     while (1)
-    %         [~,~,keyCode] = KbCheck;
-    %
-    %         if keyCode(KbName('a'))==1
-    %             break
-    %         elseif keyCode(KbName('q'))==1
-    %             abort_experiment('manual');
-    %         end
-    %
-    %         Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    %         practice_emo = true;
-    %         [practice.emotion_word, practice.emotion_time, ...
-    %             practice.emotion_trajectory] = emotion_rating(practice_time, 'practice'); % sub-function
-    %
-    %         Screen('Flip', theWindow);
-    %         practice_emo = false;
-    %
-    %     end
-    %     WaitSecs(0.1);
-    %     while (1)
-    %         [~,~,keyCode] = KbCheck;
-    %
-    %         if keyCode(KbName('b'))==1
-    %             break
-    %         elseif keyCode(KbName('q'))==1
-    %             abort_experiment('manual');
-    %         end
-    %
-    %         Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    %         ready_prompt = double('잘하셨습니다! 이제 스캔을 시작하겠습니다. 불편한 점이 있다면, 지금 실험자에게 알려주세요.');
-    %         DrawFormattedText(theWindow, ready_prompt,'center', 'center', white); %'center', 'textH'
-    %         Screen('Flip', theWindow);
-    %
-    %     end
-    %
-    %
-    %
     %% STORY START
     for story_num = 1:2
         

@@ -5,35 +5,30 @@
 % eye, biopac, etc.
 % words_data
 
-%%
+%% TEST - short
 cd('/Users/hongji/Dropbox/PiCo_git/data');
+ts = pico_test_generate_ts_indi('test');
 
-ts= pico_fmri_generate_ts_indi;  %error 나타나는 위치 질문
+%% TEST - long
+cd('/Users/hongji/Dropbox/PiCo_git/data');
+ts = pico_test_generate_ts_indi('long');
 
-%% resting
+%% COMMON TS
+cd('/Users/hongji/Dropbox/PiCo_git/data');
+ts = pico_fmri_generate_ts_common;
+
+%% INDIVIDUAL TS
+cd('/Users/hongji/Dropbox/PiCo_git/data');
+ts= pico_fmri_generate_ts_indi; 
+
+%% FREE THINKING (N = 1, 2)
 pico_fmri_resting(); % 'biopac', 'eye'); %,'testmode')
 
-%% run 1 %line100
-% run_i = 1;s
-%pico_fmri_task_main('testmode'); % 'biopac', 'fmri',  'eye');
+%% STORY RUNS (N = 1, 2, 3, 4, 5)
 pico_fmri_task_main(); %'biopac', 'eye'); % ('testmode'); % 'biopac', 'fmri',  'eye');
 
-%% run 2 
-pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
-
-%% run 3
-run_i = 3;
-pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
-
-%% run 4
-run_i = 4; 
-pico_fmri_task_main(ts{run_i}, 'fmri', 'biopac', 'eye');
-
-%% resting
-pico_fmri_resting(2);
-
 %% post-scan survey
-pico_ws       % subjectID = F010
+pico_wordsampling      
 
     %%
     words = pico_wholewords;

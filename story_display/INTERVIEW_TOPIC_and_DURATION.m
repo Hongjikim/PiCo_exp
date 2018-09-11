@@ -4,7 +4,7 @@ subj_num = input('몇번째 참가자입니까?: ');
 
 topics(subj_num,:)
 
-%% DURATION CALCULATION
+%% DURATION CALCULATION during INTERVIEW
 
 clear
 myText = input('\n 전체 글을 한 줄로 입력하시오: \n', 's');
@@ -62,8 +62,6 @@ for j = 1:length(comma_loc)
         end
     end
 end
-
-final_duration = 1000;
 
 %while final_duration > 225 || final_duration < 220
     
