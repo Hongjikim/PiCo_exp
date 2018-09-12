@@ -702,7 +702,7 @@ for story_q_num = 1:2
         [mx, my, button] = GetMouse(theWindow);
         
         x = mx;
-        y = H/2;
+        %y = H/2;
         if x < W/3, x = W/3;
         elseif x > W*2/3, x = W*2/3;
         end
@@ -722,8 +722,8 @@ for story_q_num = 1:2
         DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
             [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
         
-        Screen('DrawDots', theWindow, [x y], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-        Screen('DrawLine', theWindow, orange, x, y+10, x, y-10, 6);
+        Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
+%         Screen('DrawLines', theWindow, orange, x, y+10, x, y-10, 6);
         Screen('Flip', theWindow);
         
         trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
@@ -771,6 +771,32 @@ global white red orange bgcolor tb ; % color
 global window_rect USE_EYELINK
 global fontsize barsize
 
+bgcolor = 50;
+
+text_color = 255;
+fontsize = [28, 32, 41, 54];
+
+screens = Screen('Screens');
+window_num = screens(end);
+Screen('Preference', 'SkipSyncTests', 1);
+window_info = Screen('Resolution', window_num);
+window_rect = [0 0 window_info.width window_info.height]; %for mac, [0 0 2560 1600];
+
+W = window_rect(3); %width of screen
+H = window_rect(4); %height of screen
+textH = H/2.3;
+
+white = 255;
+red = [189 0 38];
+blue = [0 85 169];
+orange = [255 164 0];
+
+[theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect/2.5);%[0 0 2560/2 1440/2]
+Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
+font = 'NanumBarunGothic'; % check
+Screen('TextFont', theWindow, font);
+Screen('TextSize', theWindow, fontsize(2));
+
 %tb = H/5;
 rT_post = 5;
 
@@ -792,7 +818,7 @@ rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
 
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
-save(data.datafile, 'data', '-append');
+% save(data.datafile, 'data', '-append');
 
 Screen(theWindow, 'FillRect', bgcolor, window_rect);
 intro_prompt1 = double('방금 자유 생각 과제를 하는동안 자연스럽게 떠올린 생각에 대한 질문입니다.') ;
