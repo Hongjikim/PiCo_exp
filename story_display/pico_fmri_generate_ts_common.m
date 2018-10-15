@@ -55,6 +55,7 @@ for story_i = 1:numel(stories)
     out{story_i}{1}.rating_period_loc = rating_period_loc;
     out{story_i}{1}.rating_period_time = rating_period_time;
     fprintf('\n*************************\n text file: %s', stories{story_i});
+    out{story_i}{1}.story_title = input('\nStory title?:', 's');
     fprintf('\n total time: %.2f seconds', cal_duration);
     fprintf('\n total words: %.f words \n*************************\n', my_length);
     hold on; 
@@ -67,7 +68,7 @@ plot1 = plot([0 22], [215 215]);
 plot2 = plot([0 11], [220 220]);
 plot3 = plot([0 22], [225 225]);
 plot4 = plot([0 11], [230 230]);
-legend([plot1, plot2, plot3, plot4], '215','220', '225', '230')
+legend([plot1, plot2, plot3, plot4], '215', '220', '225', '230')
 
 for story_i = 1:numel(stories)
     fprintf('story order %d: %s\n', story_i, out{story_i}{1}.story_name)

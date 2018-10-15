@@ -6,57 +6,39 @@
 % words_data
 
 %% TEST - short
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
+%cd('C:\Users\Cocoanlab_WL01\Desktop\Dropbox\fMRI_task_data\data');
 ts = pico_test_generate_ts_indi('test');
 
 %% TEST - long
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+cd('C:\Users\Cocoanlab_WL01\Desktop\Dropbox\fMRI_task_data\data');
 ts = pico_test_generate_ts_indi('long');
 
 %% COMMON TS
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
 ts = pico_fmri_generate_ts_common;
 
 %% INDIVIDUAL TS
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
 ts= pico_fmri_generate_ts_indi; 
 
+%% PRACTICE 5D Survey (N=3)
+Copy_of_pico_fmri_resting(); 
+
 %% FREE THINKING (N = 1, 2)
-pico_fmri_resting(); % 'biopac', 'eye'); %,'testmode')
+clear;
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
+pico_fmri_resting('eye', 'biopac'); %, 'eye'); %, 'eye'); %, 'eye'); %'biopac', 'eye'); %, 'eye'); % 'biopac', 'eye'); %,'testmode')
 
 %% STORY RUNS (N = 1, 2, 3, 4, 5)
-pico_fmri_task_main(); %'biopac', 'eye'); % ('testmode'); % 'biopac', 'fmri',  'eye');
+clear;
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
+pico_fmri_task_main('biopac', 'eye'); %'biopac'); %, 'eye'); %'biopac', 'eye'); %'biopac','eye'); % ('ptestmode'); % 'biopac', 'fmri',  'eye');
 
-%% post-scan survey
+%% INPUT WORDS
+cd('C:\Users\Cocoanlab_WL01\Desktop\PiCo-master\story_display');
 pico_wordsampling      
 
-    %%
-    words = pico_wholewords;
-    a_fast_fmri_survey(words);
-    
-%% LAPTOP2 - Transcribe ===================================================
-    fast_fmri_transcribe_responses('nosound') % while running fast_fmri_word_generation
-    
-    %%     
-    fast_fmri_transcribe_responses('only_na') % after running fast_fmri_word_generation
-    
-    %%
-    fast_fmri_transcribe_responses('response_n', [8]) % playing sound only a few specific trials
-    
-            %% if you want to revise already written items.
-            savedir = fullfile(pwd, 'data');            
-            SID = sprintf('F087');
-            SessID = input('Session number? ', 's');  
-            save(fullfile(savedir, ['b_responsedata_sub' SID '_sess' SessID '.mat']),'response');
-
-            %%             
-            N = input('수정할 행?    ','s');
-            content = input('수정할 내용?    ','s');
-            dat_file = fullfile(savedir, ['b_responsedata_sub' SID '_sess' SessID '.mat']);          
-            load(dat_file);
-            response{str2double(N),1} = content;            
-            save(fullfile(savedir, ['b_responsedata_sub' SID '_sess' SessID '.mat']),'response');
-            
-%             save(fullfile(savedir, ['d_surveydata_subF073.mat']),'survey');
-
-            
+%% WORD SURVEY
+words = pico_wholewords;
+a_fast_fmri_survey(words);

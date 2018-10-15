@@ -24,5 +24,5 @@ both_rand = [self_rand common_rand];
 for i = 1:4
     subject_number = both_rand(i);
     cd('/Users/hongji/Dropbox/PiCo_git/Dimension_rating');
-    data = dimension_rating('vividness', subject_ID, subject_number)
+    data = dimension_rating('vividness', subject_ID, subject_number, rand_rodr_vivid)
 end

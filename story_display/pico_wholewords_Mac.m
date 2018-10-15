@@ -1,8 +1,8 @@
-function words = pico_wholewords
+function words = pico_wholewords_Mac
 %%
 % savedir = fullfile(pwd, 'data');
-basedir =  '/Users/hongji/Dropbox/PiCo_git'
-datdir = fullfile(basedir, 'data') 
+basedir =   '/Users/hongji/Dropbox/PiCo_git'; 
+datdir = fullfile(basedir, 'data') ;
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 [~, sid] = fileparts(subject_dir);

@@ -22,6 +22,7 @@ stories = filenames(fullfile(subject_dir, '*.txt')); % story01.txt story02.txt
 %% story order (randomize)
 
 % reorder: stories 
+% clear;
 rng('shuffle');
 
 rand_order_odd = [2*randperm(3)-1; 2*(randperm(3)+2)];
@@ -42,13 +43,14 @@ for i = 1:size(rand_order,2)
 end
 
 rand_order = rand_order(:);
+%rand_order = aa;
 stories = stories(rand_order);
 
 
 
 %% calculate and print out text duration
 
-load('common_ts_12-Sep-2018_0_24.mat');
+load('common_ts_12-Sep-2018_14_37.mat');
 common_out = out;
 
 for story_i = 1:10
@@ -60,6 +62,7 @@ for story_i = 1:10
         out{story_i}{1}.rating_period_loc = rating_period_loc;
         out{story_i}{1}.rating_period_time = rating_period_time;
         fprintf('\n*************************\n text file: %s', stories{story_i});
+        out{story_i}{1}.story_title = input('\nStory title?:', 's');
         fprintf('\n total time: %.2f seconds', cal_duration);
         fprintf('\n total words: %.f words \n*************************\n', my_length);
         plot(story_i, cal_duration, 'o')

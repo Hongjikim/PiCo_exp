@@ -2,12 +2,13 @@ function pico_fmri_task_main(varargin)
 
 
 %% DEFAULT
+global USE_EYELINK
 
 testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir =  '/Users/hongji/Dropbox/PiCo_git';
+basedir =  'C:\Users\Cocoanlab_WL01\Desktop\Dropbox\fMRI_task_data';
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
@@ -56,7 +57,7 @@ nowtime = clock;
 subjdate = sprintf('%.2d%.2d%.2d', nowtime(1), nowtime(2), nowtime(3));
 
 data.subject = sid;
-data.datafile = fullfile(subject_dir, [subjdate, '_', sid, '_run', sprintf('%.2d', run_n), '.mat']);
+data.datafile = fullfile(subject_dir, [subjdate, '_', sid, '_S_run', sprintf('%.2d', run_n), '.mat']);
 data.version = 'PICO_v1_09-2018_Cocoanlab';
 data.starttime = datestr(clock, 0);
 data.starttime_getsecs = GetSecs;
@@ -82,8 +83,10 @@ end
 
 global theWindow W H; % window property
 global white red orange blue bgcolor ; % color
-global fontsize window_rect text_color IVqT USE_EYELINK ; %lb tb recsize barsize rec;
+global fontsize window_rect text_color IVqT ; %lb tb recsize barsize rec;
+global ptb_drawformattedtext_disableClipping
 
+ptb_drawformattedtext_disableClipping = 1;
 % Screen setting
 bgcolor = 50;
 
@@ -101,9 +104,9 @@ H = window_rect(4); %height of screen
 textH = H/2.3;
 
 white = 255;
-red = [189 0 38];
+red = [190 0 0];
 blue = [0 85 169];
-orange = [255 164 0];
+orange = [255 145 0];
 
 %% READY?
 
@@ -126,17 +129,17 @@ try
     % theWindow = Screen('OpenWindow', window_num, bgcolor, window_rect); % start the screen(FULL)
     
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
-    [theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect/2);%[0 0 2560/2 1440/2]
+    [theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-    font = 'NanumBarunGothic'; % check
-    Screen('TextFont', theWindow, font);
+%     font = 'NanumBarunGothic'; % check
+%     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize(2));
     if ~testmode, HideCursor; end
     
     %% SETUP: Eyelink
     % need to be revised when the eyelink is here.
     if USE_EYELINK
-        edf_filename = ['E_S' sid(5:end), '_' sprintf('%.1d', run_n)]; % name should be equal or less than 8
+        edf_filename = ['E' sid(5:7), '_S' sprintf('%.1d', run_n)]; % name should be equal or less than 8
         % E_S for STORY
         edfFile = sprintf('%s.EDF', edf_filename);
         eyelink_main(edfFile, 'Init');
@@ -165,19 +168,18 @@ try
                 end
                 
                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                % fontsize = fontsize_m;
                 Screen('TextSize', theWindow, fontsize(2));
                 ready_prompt = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
                 DrawFormattedText(theWindow, ready_prompt,'center', 'center', white, [], [], [], 1.5); %'center', 'textH'
                 Screen('Flip', theWindow);
                 
             end
-            
             %% FOR DISDAQ 10 SECONDS
             
             % gap between 's' key push and the first stimuli (disdaqs: data.disdaq_sec)
             % 4 seconds: "시작합니다..."
             
+            test.scanstart = GetSecs;
             data.runscan_starttime = GetSecs; % run start timestamp
             Screen(theWindow, 'FillRect', bgcolor, window_rect);
             
@@ -185,7 +187,7 @@ try
             start_msg = double('곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요.') ;
             DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color, [], [], [], 1.5);
             Screen('Flip', theWindow);
-            waitsec_fromstarttime(data.runscan_starttime, 4);
+            waitsec_fromstarttime(data.runscan_starttime, 2);
             
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
@@ -217,20 +219,15 @@ try
         else
             % Start second display
             story2_sTime = GetSecs;
-            Screen('TextSize', theWindow, fontsize(2));
-            start_msg = double('다음 이야기를 시작하겠습니다. \n\n 곧 화면 중앙에 단어가 나타날 예정이니 \n\n 글의 내용에 최대한 몰입해주세요. ') ;
-            DrawFormattedText(theWindow, start_msg, 'center', 'center', text_color,  [], [], [], 1.5);
-            Screen('Flip', theWindow);
-            waitsec_fromstarttime(story2_sTime, 4)
-            
             Screen(theWindow,'FillRect',bgcolor, window_rect);
             Screen('Flip', theWindow);
-            waitsec_fromstarttime(story2_sTime, 8) % baseline (blank) = 4 seconds for 2nd story
+            waitsec_fromstarttime(story2_sTime, 4) % baseline (blank) = 4 seconds for 2nd story
         end
         
         data.loop_start_time{story_num} = GetSecs;
         sTime = data.loop_start_time{story_num};
         duration = 0;
+        test.loopstart{story_num} = GetSecs;
         
         for word_i = 1:numel(data.trial_sequence{story_num})
             
@@ -264,30 +261,20 @@ try
                 
                 % 최대 시간 맞추기
                 if sum(word_i == data.trial_sequence{story_num}{1}.rating_period_loc) == 1
-                    IVqT = 5; 
-                    duration = duration + IVqT + 2; % inter valence question time (Question 5 + blank 2) 
+                    IVqT = 5;
+                    duration = duration + IVqT + 2; % inter valence question time (Question 5 + blank 2)
                     e_i = find(data.trial_sequence{story_num}{1}.rating_period_loc == word_i);
                     data.taskdat{story_num}{e_i}.valence_starttime = GetSecs;  % rating start timestamp
-                    data.taskdat{story_num}{e_i}.int_valence = pico_int_valence(data, story_num)
+                    data = pico_int_valence(data, story_num, e_i);
                     waitsec_fromstarttime(sTime, duration);
                 end
-                
-            end
-            
-            if rem(word_i,5) == 0
-                save(data.datafile, 'data', '-append');
             end
         end
         
         data.loop_end_time{story_num} = GetSecs;
-        save(data.datafile, 'data', '-append');
-        
-        while GetSecs - data.loop_end_time{story_num} < 5
-            % when the story is done, wait for 5 seconds. (in Blank)
-        end
-        
-        data.taskdat{story_num}{3}.valence_starttime = GetSecs;  % rating start timestamp
-        data.tskdat{story_num}{3}.int_valence = pico_int_valence(data, story_num); % sub-function
+        e_i = 3;
+        data.taskdat{story_num}{e_i}.valence_starttime = GetSecs;  % rating start timestamp
+        data = pico_int_valence(data, story_num, e_i); % sub-function
         
         waitsec_fromstarttime(data.taskdat{story_num}{3}.valence_starttime, IVqT + 2);
         
@@ -296,8 +283,8 @@ try
         DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
         Screen('Flip', theWindow);
         
-        waitsec_fromstarttime(data.runscan_starttime, 250); % flexible time (maximum 250 sec for each story)
-        
+        save(data.datafile, 'data', '-append');
+       
         if USE_BIOPAC % resting start trigger (after 250 buffer time)
             BIOPAC_trigger(ljHandle, biopac_channel, 'on');
             waitsec_fromstarttime(GetSecs, 0.2);
@@ -310,36 +297,51 @@ try
             Eyelink('Message','Resting start');
         end
         
-        data = story_FT(data, story_num); %free thinking for story!
+        waitsec_fromstarttime(sTime, 250); % flexible time (maximum 250 sec for each story)
+        test.loop_250_end{story_num} = GetSecs;
         
-        save(data.datafile, 'data', '-append');
+        data = story_FT(data, story_num); %free thinking for story!
         
         if USE_EYELINK
             Eyelink('Message','Rest end');
         end
         
-        FT_endTime = GetSecs;
-        while GetSecs - FT_endTime <5
-            Screen('TextSize', theWindow, fontsize(2));
-            run_end_msg = double('이번 이야기와 자유생각이 끝났습니다. \n 나타나는 질문들에 답변해주세요.') ;
-            DrawFormattedText(theWindow, run_end_msg, 'center', 'center', white, [], [], [], 1.5);
-            Screen('Flip', theWindow);
-        end
+        Screen('TextSize', theWindow, fontsize(2));
+        run_end_msg = double('이번 이야기와 자유생각이 끝났습니다. \n 나타나는 질문들에 답변해주세요.') ;
+        DrawFormattedText(theWindow, run_end_msg, 'center', 'center', white, [], [], [], 1.5);
+        Screen('Flip', theWindow);
+        save(data.datafile, 'data', '-append');
+        waitsec_fromstarttime(sTime, 410);
         
         data = pico_post_run_survey(data, story_num); % post_run questionnaire after each FT
         
+        Screen('Flip', theWindow);
         save(data.datafile, 'data', '-append');
+        waitsec_fromstarttime(data.postrunQ{story_num}.response_endtime, 2)
         
+        Screen(theWindow, 'FillRect', bgcolor, window_rect);
+        Screen('Flip', theWindow);
+        
+        if story_num == 1
+            waitsec_fromstarttime(data.postrunQ{story_num}.start_time, 27)
+        else
+            waitsec_fromstarttime(GetSecs, 3)
+        end
     end
-    
     %% RUN END MESSAGE
-    save(data.datafile, 'data', '-append');
     
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize(2));
     run_end_msg = '잘하셨습니다. 잠시 대기해 주세요. \n 곧 이야기에 대한 질문들이 나타납니다.';
     DrawFormattedText(theWindow, double(run_end_msg), 'center', 'center', white, [], [], [], 1.5);
     Screen('Flip', theWindow);
+    
+    while (1)
+        [~,~,keyCode] = KbCheck;
+        if keyCode(KbName('space')) == 1
+            break
+        end
+    end
     
     if USE_EYELINK
         Eyelink('Message','Story Run END');
@@ -355,9 +357,30 @@ try
     end
     
     data.endtime_getsecs = GetSecs;
-    save(data.datafile, 'data', '-append');
+    waitsec_fromstarttime(GetSecs, 3)
     
-    waitsec_fromstarttime(GetSecs, 0.5)
+    % POST RUN QUESTIONNAIRE (about STORY 1 and 2)
+    
+    for story_num = 1:2
+        story_titles{story_num} = data.trial_sequence{story_num}{1}.story_title;
+        
+        data.taskdat{story_num}{4}.concent_starttime = GetSecs;  % rating start timestamp
+        [data.taskdat{story_num}{4}.concentration, data.taskdat{story_num}{4}.concent_time, ...
+            data.taskdat{story_num}{4}.concent_trajectory] = concent_rating(data.taskdat{story_num}{4}.concent_starttime, story_titles, story_num); % sub-function
+        
+        data.taskdat{story_num}{5}.concent_starttime = GetSecs;  % rating start timestamp
+        [data.taskdat{story_num}{5}.familiarity, data.taskdat{story_num}{5}.familiarity_time, ...
+            data.taskdat{story_num}{5}.familiarity_trajectory] = familiar_rating(data.taskdat{story_num}{5}.concent_starttime, story_titles, story_num); % sub-function
+       
+    end
+    data.run_including_5d_and_storyQ_endtime = GetSecs; 
+     save(data.datafile, 'data', '-append');
+     
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    Screen('TextSize', theWindow, fontsize(2));
+    run_end_msg = '이번 이야기 세션이 모두 끝났습니다. \n 잠시 대기해주세요.';
+    DrawFormattedText(theWindow, double(run_end_msg), 'center', 'center', white, [], [], [], 1.5);
+    Screen('Flip', theWindow);
     
     while (1)
         [~,~,keyCode] = KbCheck;
@@ -365,31 +388,10 @@ try
             break
         end
     end
-    waitsec_fromstarttime(GetSecs, 0.5)
-    
-    %% POST RUN QUESTIONNAIRE (about STORY 1 and 2)
-    
-    data.taskdat{story_num}{4}.concent_starttime = GetSecs;  % rating start timestamp
-    [data.taskdat{story_num}{4}.concentration, data.taskdat{story_num}{4}.concent_time, ...
-        data.taskdat{story_num}{4}.concent_trajectory] = concent_rating(data.taskdat{story_num}{4}.concent_starttime); % sub-function
-    
-    data.taskdat{story_num}{5}.concent_starttime = GetSecs;  % rating start timestamp
-    [data.taskdat{story_num}{5}.familiarity, data.taskdat{story_num}{5}.familiarity_time, ...
-        data.taskdat{story_num}{5}.familiarity_trajectory] = familiar_rating(data.taskdat{story_num}{5}.concent_starttime); % sub-function
-    
-    waitsec_fromstarttime(GetSecs, 0.5)
-    
-    while (1)
-        [~,~,keyCode] = KbCheck;
-        if keyCode(KbName('space')) == 1
-            break
-        end
-    end
-    waitsec_fromstarttime(GetSecs, 0.5)
     
     ShowCursor();
     Screen('Clear');
-    Screen('CloseAll');
+    Screen('CloseAll')
     
 catch err
     
@@ -403,10 +405,7 @@ catch err
 end
 end
 
-
-
 %% ====== SUBFUNCTIONS ======
-
 
 function data = story_FT(data, story_num)
 
@@ -431,14 +430,18 @@ data.resting{story_num}.sampling_time = sampling_time;
 
 while GetSecs - resting_sTime < story_ft_time
     for i = 1:2
+        k = 0;
         while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
-            data.resting{story_num}.start_Sampling{i} = GetSecs;
+            k = k +1;
+            if k == 1
+                data.resting{story_num}.start_Sampling{i} = GetSecs;
+            end
+            data.resting{story_num}.end_Sampling{i} = GetSecs;
             Screen('TextSize', theWindow, fontsize(2));
             FT_msg = double('지금 무슨 생각을 하고 있는지 \n단어나 구로 말해주세요.') ;
             DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color, [], [], [], 1.5);
             Screen('Flip', theWindow);
         end
-        data.resting{story_num}.end_Sampling{i} = GetSecs;
         Screen('TextSize', theWindow, fontsize(3));
         DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
         Screen('Flip', theWindow);
@@ -446,6 +449,12 @@ while GetSecs - resting_sTime < story_ft_time
 end
 
 data.resting{story_num}.fixation_end_time = GetSecs;
+test.fixation_end{story_num} = GetSecs;
+
+if story_num == 2
+    data.runscan_endtime = GetSecs;
+    test.scanend = GetSecs;
+end
 
 while GetSecs - data.resting{story_num}.fixation_end_time < 5
     Screen('TextSize', theWindow, fontsize(2));
@@ -453,7 +462,7 @@ while GetSecs - data.resting{story_num}.fixation_end_time < 5
     DrawFormattedText(theWindow, end_msg, 'center', 'center', text_color, [], [], [], 1.5);
     Screen('Flip', theWindow);
 end
-
+test.lastWSend = GetSecs;
 end
 
 function abort_experiment(varargin)
@@ -482,126 +491,22 @@ disp(str); %present this text in command window
 
 end
 
-function [emotion_word, trajectory_time, trajectory] = emotion_rating(starttime)
-
-global W H orange bgcolor window_rect theWindow red rT
-
-rng('shuffle');        % it prevents pseudo random number
-rand_z = randperm(14); % random seed
-[choice, xy_rect] = display_emotion_words(rand_z);
-
-SetMouse(880, 500);
-% SetMouse(W/2, H/2);
-
-trajectory = [];
-trajectory_time = [];
-
-j = 0;
-
-while(1)
-    j = j + 1;
-    [x, y, button] = GetMouse(theWindow);
-    mx = x*1.1;
-    my = y*1.1;
-    
-    Screen(theWindow,'FillRect',bgcolor, window_rect);
-    %     practice_msg = double('이야기 중간중간에 나오는 감정 평가를 연습해보겠습니다. \n 실험자의 지시에 따라 트랙볼을 움직여주세요.');
-    %
-    %     if practice_emo == true;
-    %         DrawFormattedText(theWindow, practice_msg,'center', H/4-20, white, [], [], [], 1.2);
-    %     end
-    
-    
-    display_emotion_words(rand_z);
-    Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-    Screen('Flip', theWindow);
-    
-    trajectory(j,:) = [mx my];                  % trajectory of location of cursor
-    trajectory_time(j) = GetSecs - starttime; % trajectory of time
-    
-    if trajectory_time(end) >= rT  % maximum time of rating is 8s
-        button(1) = true;
-    end
-    
-    if button(1)  % After click, the color of cursor dot changes.
-        Screen(theWindow,'FillRect',bgcolor, window_rect);
-        display_emotion_words(rand_z);
-        Screen('DrawDots', theWindow, [mx;my], 10, red, [0 0], 1);
-        Screen('Flip', theWindow);
-        
-        % which word based on x y from mouse click
-        choice_idx = mx > xy_rect(:,1) & mx < xy_rect(:,3) & my > xy_rect(:,2) & my < xy_rect(:,4);
-        if any(choice_idx)
-            emotion_word = choice{choice_idx};
-        else
-            emotion_word = '';
-        end
-        
-        WaitSecs(0.3);
-        
-        
-        break;
-    end
-end
-
-end
-
-function [choice, xy_rect] = display_emotion_words(z)
-
-global W H white theWindow window_rect bgcolor square fontsize
-
-square = [0 0 140 80];  % size of square of word
-r=350;
-t=360/28;
-theta=[t, t*3, t*5, t*7, t*9, t*11, t*13, t*15, t*17, t*19, t*21, t*23, t*25, t*27];
-xy=[W/2+r*cosd(theta(1)) H/2-r*sind(theta(1)); W/2+r*cosd(theta(2)) H/2-r*sind(theta(2)); ...
-    W/2+r*cosd(theta(3)) H/2-r*sind(theta(3)); W/2+r*cosd(theta(4)) H/2-r*sind(theta(4));...
-    W/2+r*cosd(theta(5)) H/2-r*sind(theta(5)); W/2+r*cosd(theta(6)) H/2-r*sind(theta(6));...
-    W/2+r*cosd(theta(7)) H/2-r*sind(theta(7)); W/2+r*cosd(theta(8)) H/2-r*sind(theta(8));...
-    W/2+r*cosd(theta(9)) H/2-r*sind(theta(9)); W/2+r*cosd(theta(10)) H/2-r*sind(theta(10));...
-    W/2+r*cosd(theta(11)) H/2-r*sind(theta(11)); W/2+r*cosd(theta(12)) H/2-r*sind(theta(12));...
-    W/2+r*cosd(theta(13)) H/2-r*sind(theta(13)); W/2+r*cosd(theta(14)) H/2-r*sind(theta(14))];
-
-xy_word = [xy(:,1)-square(3)/2, xy(:,2)-square(4)/2-15, xy(:,1)+square(3)/2, xy(:,2)+square(4)/2];
-xy_rect = [xy(:,1)-square(3)/2, xy(:,2)-square(4)/2, xy(:,1)+square(3)/2, xy(:,2)+square(4)/2];
-
-colors = 200;
-
-%% words
-
-choice = {'기쁨', '괴로움', '희망', '두려움', '행복', '실망', '자부심', '부끄러움', '후회', '슬픔', '분노', '사랑', '미움', '없음'};
-choice = choice(z);
-
-%%
-Screen(theWindow,'FillRect',bgcolor, window_rect);
-Screen('TextSize', theWindow, fontsize);
-% Rectangle
-for i = 1:numel(theta)
-    Screen('FrameRect', theWindow, colors, CenterRectOnPoint(square,xy(i,1),xy(i,2)),5); %check, 3
-end
-% Choice letter
-for i = 1:numel(choice)
-    fontsize = 36;
-    Screen('TextSize', theWindow, fontsize);
-    DrawFormattedText(theWindow, double(choice{i}), 'center', 'center', white, [],[],[],[],[],xy_word(i,:));
-end
-
-end
-
-function [concentration, trajectory_time, trajectory] = concent_rating(starttime)
+function [concentration, trajectory_time, trajectory] = concent_rating(starttime, story_titles, story_num)
 
 global W H orange bgcolor window_rect theWindow red white cqT
 global fontsize
-intro_prompt1 = double('방금 나타난 이야기에 얼마나 집중할 수 있었나요?');
-intro_prompt2 = double('트랙볼을 움직여서 집중한 정도를 클릭해주세요.');
-title={'전혀','보통', '매우'};
+
+title_prompt = [double('<') double(story_titles{story_num}) double('>')];
+intro_prompt1 = double('위의 이야기에 얼마나 집중/몰입할 수 있었나요?');
+intro_prompt2 = double('트랙볼을 움직여서 집중/몰입했던 정도를 클릭해주세요.');
+title={'전혀', '보통', '매우'};
 
 SetMouse(W/2, H/2);
 cqT = 5;
 trajectory = [];
 trajectory_time = [];
-xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3;
-    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
+xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3 W/2 W/2;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
 
 j = 0;
 
@@ -609,7 +514,7 @@ while(1)
     j = j + 1;
     [mx, my, button] = GetMouse(theWindow);
     
-    x = mx;
+    x = (mx-W/2).*1.3+W/2 ;
     y = H/2;
     if x < W/3, x = W/3;
     elseif x > W*2/3, x = W*2/3;
@@ -619,6 +524,7 @@ while(1)
     Screen(theWindow,'FillRect',bgcolor, window_rect);
     Screen('DrawLines',theWindow, xy, 5, 255);
     
+    DrawFormattedText(theWindow, title_prompt,'center', H/4-100, white);
     DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
     DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white); % check
     % Draw scale letter
@@ -631,21 +537,22 @@ while(1)
         [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
     
     % Screen('DrawDots', theWindow, [x y], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-    Screen('DrawLine', theWindow, orange, x, y+10, x, y-10, 6)
+    Screen('DrawLine', theWindow, orange, x, y+10, x, y-10, 6);
     Screen('Flip', theWindow);
     
     trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
     trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
     
-    if trajectory_time(end) >= cqT  % maximum time of rating is 5s
-        button(1) = true;
-    end
+    %     if trajectory_time(end) >= cqT  % maximum time of rating is 5s
+    %         button(1) = true;
+    %     end
     
     if button(1)  % After click, the color of cursor dot changes.
         rrtt = GetSecs;
         Screen('TextSize', theWindow, fontsize(2));
         Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('DrawLines',theWindow, xy, 5, 255);
+        DrawFormattedText(theWindow, title_prompt,'center', H/4-100, white);
         DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
         DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white);
         % Draw scale letter
@@ -657,62 +564,82 @@ while(1)
         DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
             [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
         %Screen('DrawDots', theWindow, [x;y], 10, red, [0 0], 1);
-        Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6)
+        Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6);
         Screen('Flip', theWindow);
         
         concentration = (x-W/3)/(W/3);  % 0~1
-        waitsec_fromstarttime(rrtt, 1);
+        waitsec_fromstarttime(rrtt, .5);
         Screen(theWindow, 'FillRect', bgcolor, window_rect)
         Screen('Flip', theWindow);
-        waitsec_fromstarttime(starttime, cqT+2);
-        break;
-        
+        %         waitsec_fromstarttime(starttime, cqT+2);
         break;
     end
 end
 end
 
-function [familiarity, trajectory_time, trajectory] = familiar_rating(story_titles)
-
-for i =1:2
-    story_titles{i} = input('title?: ', 's')
-end
+function [familiarity, trajectory_time, trajectory] = familiar_rating(starttime, story_titles, story_num)
 
 global W H orange bgcolor window_rect theWindow red fontsize white cqT
 
 
-for story_q_num = 1:2
-    starttime = GetSecs;
-    title_prompt = [double('<') double(story_titles{story_q_num}) double('>')];
-    intro_prompt1 = double('위의 이야기가 얼마나 새로웠나요?');
-    intro_prompt2 = double('트랙볼을 움직여서 새로웠던 정도를 클릭해주세요.');
-    title={'전혀 새롭지 않음','보통', '매우 새로움'};
+title_prompt = [double('<') double(story_titles{story_num}) double('>')];
+intro_prompt1 = double('위의 이야기가 얼마나 익숙했나요?');
+intro_prompt2 = double('트랙볼을 움직여서 익숙했던 정도를 클릭해주세요.');
+title={'전혀','보통', '매우'};
+
+SetMouse(W/2, H/2);
+% cqT = 5;
+trajectory = [];
+trajectory_time = [];
+xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3 W/2 W/2;
+    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
+
+j = 0;
+
+while(1)
+    j = j + 1;
+    [mx, ~, button] = GetMouse(theWindow);
     
-    SetMouse(W/2, H/2);
-    % cqT = 5;
-    trajectory = [];
-    trajectory_time = [];
-    xy = [W/3 W*2/3 W/3 W/3 W*2/3 W*2/3;
-        H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7]/2.5;
+    x = (mx-W/2).*1.3+W/2 ;
+    y = H/2;
+    if x < W/3, x = W/3;
+    elseif x > W*2/3, x = W*2/3;
+    end
     
-    j = 0;
+    Screen('TextSize', theWindow, fontsize(2));
+    Screen(theWindow,'FillRect',bgcolor, window_rect);
+    Screen('DrawLines',theWindow, xy, 3, 255);
+    DrawFormattedText(theWindow, title_prompt,'center',  H/4-100, white);
+    DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
+    DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white); % check
+    % Draw scale letter
+    Screen('TextSize', theWindow, fontsize(1));
+    DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
+        [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);
+    DrawFormattedText(theWindow, double(title{2}),'center', 'center', white, ...
+        [],[],[],[],[], [W/2-15, xy(2,1), W/2+20, xy(2,1)+60]);
+    DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
+        [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
     
-    while(1)
-        j = j + 1;
-        [mx, my, button] = GetMouse(theWindow);
-        
-        x = mx;
-        %y = H/2;
-        if x < W/3, x = W/3;
-        elseif x > W*2/3, x = W*2/3;
-        end
-        
+    %Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
+    Screen('DrawLine', theWindow, orange, x, y+10, x, y-10, 6);
+    Screen('Flip', theWindow);
+    
+    trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
+    trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
+    %
+    %         if trajectory_time(end) >= cqT  % maximum time of rating is 5s
+    %             button(1) = true;
+    %         end
+    
+    if button(1)  % After click, the color of cursor dot changes.
+        rrtt = GetSecs;
         Screen('TextSize', theWindow, fontsize(2));
         Screen(theWindow,'FillRect',bgcolor, window_rect);
         Screen('DrawLines',theWindow, xy, 3, 255);
-        DrawFormattedText(theWindow, title_prompt,'center', H/8-90, white)
-        DrawFormattedText(theWindow, intro_prompt1,'center', H/8-50, white);
-        DrawFormattedText(theWindow, intro_prompt2,'center', H/8-10, white); % check
+        DrawFormattedText(theWindow, title_prompt,'center', H/4-100, white)
+        DrawFormattedText(theWindow, intro_prompt1,'center', H/4-20, white);
+        DrawFormattedText(theWindow, intro_prompt2,'center', H/4+65, white); % check
         % Draw scale letter
         Screen('TextSize', theWindow, fontsize(1));
         DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
@@ -721,45 +648,16 @@ for story_q_num = 1:2
             [],[],[],[],[], [W/2-15, xy(2,1), W/2+20, xy(2,1)+60]);
         DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
             [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
-        
-        Screen('DrawDots', theWindow, [mx my], 10, orange, [0, 0], 1); % draw orange dot on the cursor
-%         Screen('DrawLines', theWindow, orange, x, y+10, x, y-10, 6);
+        %Screen('DrawDots', theWindow, [x;y], 10, red, [0 0], 1);
+        Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6);
         Screen('Flip', theWindow);
         
-        trajectory(j,1) = (x-W/2)/(W/3);    % trajectory of location of cursor
-        trajectory_time(j,1) = GetSecs - starttime; % trajectory of time
-%         
-%         if trajectory_time(end) >= cqT  % maximum time of rating is 5s
-%             button(1) = true;
-%         end
-        
-        if button(1)  % After click, the color of cursor dot changes.
-            rrtt = GetSecs;
-              Screen('TextSize', theWindow, fontsize(2));
-        Screen(theWindow,'FillRect',bgcolor, window_rect);
-        Screen('DrawLines',theWindow, xy, 3, 255);
-        DrawFormattedText(theWindow, title_prompt,'center', H/8-90, white)
-        DrawFormattedText(theWindow, intro_prompt1,'center', H/8-50, white);
-        DrawFormattedText(theWindow, intro_prompt2,'center', H/8-10, white); % check
-        % Draw scale letter
-        Screen('TextSize', theWindow, fontsize(1));
-        DrawFormattedText(theWindow, double(title{1}),'center', 'center', white, ...
-            [],[],[],[],[], [xy(1,1)-70, xy(2,1), xy(1,1)+20, xy(2,1)+60]);
-        DrawFormattedText(theWindow, double(title{2}),'center', 'center', white, ...
-            [],[],[],[],[], [W/2-15, xy(2,1), W/2+20, xy(2,1)+60]);
-        DrawFormattedText(theWindow, double(title{3}),'center', 'center', white, ...
-            [],[],[],[],[], [xy(1,2)+45, xy(2,1), xy(1,2)+20, xy(2,1)+60]);
-            %Screen('DrawDots', theWindow, [x;y], 10, red, [0 0], 1);
-            Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6);
-            Screen('Flip', theWindow);
-            
-            familiarity = (x-W/3)/(W/3);  % 0~1
-            waitsec_fromstarttime(rrtt, 1);
-            Screen(theWindow, 'FillRect', bgcolor, window_rect)
-            Screen('Flip', theWindow);
-            waitsec_fromstarttime(rrtt, 2);
-            break
-        end
+        familiarity = (x-W/3)/(W/3);  % 0~1
+        waitsec_fromstarttime(rrtt, .5);
+        Screen(theWindow, 'FillRect', bgcolor, window_rect)
+        Screen('Flip', theWindow);
+        waitsec_fromstarttime(rrtt, .5);
+        break
     end
 end
 end
@@ -767,63 +665,40 @@ end
 function data = pico_post_run_survey(data, story_num)
 
 global theWindow W H; % window property
-global white red orange bgcolor tb ; % color
+global white red orange bgcolor tb rec recsize; % color
 global window_rect USE_EYELINK
 global fontsize barsize
 
-bgcolor = 50;
-
-text_color = 255;
-fontsize = [28, 32, 41, 54];
-
-screens = Screen('Screens');
-window_num = screens(end);
-Screen('Preference', 'SkipSyncTests', 1);
-window_info = Screen('Resolution', window_num);
-window_rect = [0 0 window_info.width window_info.height]; %for mac, [0 0 2560 1600];
-
-W = window_rect(3); %width of screen
-H = window_rect(4); %height of screen
-textH = H/2.3;
-
-white = 255;
-red = [189 0 38];
-blue = [0 85 169];
-orange = [255 164 0];
-
-[theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect/2.5);%[0 0 2560/2 1440/2]
-Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-font = 'NanumBarunGothic'; % check
-Screen('TextFont', theWindow, font);
-Screen('TextSize', theWindow, fontsize(2));
-
 %tb = H/5;
-rT_post = 5;
+if story_num == 1
+    rT_post = 5;
+else
+    rT_post = Inf;
+end
 
-lb=W*3/128;     %110        when W=1280
-tb=H*12/80;     %180
+lb=300; %W*3/128;     %110        when W=1280
+tb=300; %H*12/80;     %180
 
-recsize=[W*450/1280 H*175/1000]*1.9;
+recsize=[W*450/1280 H*175/1000];
 barsizeO=[W*340/1280, W*180/1280, W*340/1280, W*180/1280, W*340/1280, 0;
     10, 10, 10, 10, 10, 0; 10, 0, 10, 0, 10, 0;
     10, 10, 10, 10, 10, 0; 1, 2, 3, 4, 5, 0]*1;
 rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
     lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표
 
-
 % trajectory = [];
 % trajectory_time = [];
 %
 % j = 0;
-
+post_run.start_time = GetSecs;
 question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
 
 % save(data.datafile, 'data', '-append');
 
 Screen(theWindow, 'FillRect', bgcolor, window_rect);
 intro_prompt1 = double('방금 자유 생각 과제를 하는동안 자연스럽게 떠올린 생각에 대한 질문입니다.') ;
- Screen('TextSize', theWindow, fontsize(3));
-DrawFormattedText(theWindow, intro_prompt1,'center', H/5-20, white);
+Screen('TextSize', theWindow, fontsize(2));
+DrawFormattedText(theWindow, intro_prompt1,'center', H/5-80, white);
 
 title={'','', '','', '', '';
     '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '';
@@ -865,23 +740,6 @@ for i=1:6       % 3 scales for one line, 18 scales
     linexy(2,6*(i+1)+6)= rec(i,2)+recsize(2)/2+barsize(4,i)/2;
 end
 
-% Draw scale lines
-Screen('DrawLines',theWindow, linexy, 4, 255);
-
-% Draw scale letter
-post_run.start_time = GetSecs;
-for i = 1:numel(title(1,:))
-    Screen('TextSize', theWindow, fontsize(1));
-    DrawFormattedText(theWindow, double(title{1,i}),'center', 'center', white, [],[],[],[],[],...
-        [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
-    Screen('TextSize', theWindow, fontsize(1)-5);
-    DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[],[],[],...
-        [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+60]);
-    DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],[],[],...
-        [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+60]);
-    DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],[],[],...
-        [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+60]);
-end
 Screen('Flip', theWindow);
 
 for j=1:numel(barsize(5,:))
@@ -898,14 +756,41 @@ for j=1:numel(barsize(5,:))
         post_run.dat{barsize(5,j)}.trajectory = [];
         post_run.dat{barsize(5,j)}.time = [];
         post_run.dat{barsize(5,j)}.question_type = question_type{z(j)};
+        post_run.dat{barsize(5,j)}.button_press = true;
         
         starttime = GetSecs; % Each question start time
         
         while(1)
+            
+            % Draw scale lines
+            Screen('DrawLines',theWindow, linexy, 4, 255);
+            Screen('TextSize', theWindow, fontsize(2));
+            DrawFormattedText(theWindow, intro_prompt1,'center', H/5-80, white)
+            % Draw scale letter
+            
+            for i = 1:numel(title(1,:))
+                Screen('TextSize', theWindow, fontsize(1));
+                DrawFormattedText(theWindow, double(title{1,i}),'center', 'center', white, [],[],[],[],[],...
+                    [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
+                Screen('TextSize', theWindow, fontsize(1)-5);
+                DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[], 1.5,[],...
+                    [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+80]);
+                DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[], 1.5,[],...
+                    [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+80]);
+                DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],1.5,[],...
+                    [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+80]);
+            end
+            
             % Track Mouse coordinate
             [mx, my, button] = GetMouse(theWindow);
             
-            x = mx;  % x of a color dot
+            if mod(barsize(5,j),2) == 0
+                cent_x = rec(j,1)+(recsize(1)-barsize(1,j))/2 ;
+            else
+                cent_x = rec(j,1)+recsize(1)/2 ;
+            end
+        
+            x = (mx - cent_x).*1.3 + cent_x ;  % x of a color dot
             y = rec(j,2)+recsize(2)/2;
             if x < rec(j,1)+(recsize(1)-barsize(1,j))/2, x = rec(j,1)+(recsize(1)-barsize(1,j))/2;
             elseif x > rec(j,1)+(recsize(1)+barsize(1,j))/2, x = rec(j,1)+(recsize(1)+barsize(1,j))/2;
@@ -913,7 +798,8 @@ for j=1:numel(barsize(5,:))
             
             %                     % display scales and cursor
             %                     a_display_survey(z, seeds_i, target_i, words','whole');
-            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            %Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
+            Screen('DrawLines', theWindow, [x, x; y+10 y-10], 6, orange);
             Screen('Flip', theWindow);
             
             % Get trajectory
@@ -922,17 +808,40 @@ for j=1:numel(barsize(5,:))
             post_run.dat{barsize(5,j)}.time(rec_i,1) = GetSecs - starttime;
             
             if GetSecs - starttime >= rT_post
+                post_run.dat{barsize(5,j)}.button_press = false;
                 button(1) = true;
             end
             
             if button(1)
+                
+                % Draw scale lines
+                Screen('DrawLines',theWindow, linexy, 4, 255);
+                Screen('TextSize', theWindow, fontsize(2));
+                DrawFormattedText(theWindow, intro_prompt1,'center', H/5-80, white)
+                % Draw scale letter
+                
+                for i = 1:numel(title(1,:))
+                    Screen('TextSize', theWindow, fontsize(1));
+                    DrawFormattedText(theWindow, double(title{1,i}),'center', 'center', white, [],[],[],[],[],...
+                        [rec(i,1), rec(i,2)+5, rec(i,1)+recsize(1), rec(i,2)+recsize(2)/2]);
+                    Screen('TextSize', theWindow, fontsize(1)-5);
+                    DrawFormattedText(theWindow, double(title{2,i}),'center', 'center', white, [],[],[], 1.5,[],...
+                        [linexy(1,2*i-1)-15, linexy(2,2*i-1), linexy(1,2*i-1)+20, linexy(2,2*i-1)+80]);
+                    DrawFormattedText(theWindow, double(title{3,i}),'center', 'center', white, [],[],[],1.5,[],...
+                        [rec(i,1)+recsize(1)/3, linexy(2,2*i-1), rec(i,1)+recsize(1)*2/3, linexy(2,2*i-1)+80]);
+                    DrawFormattedText(theWindow, double(title{4,i}),'center', 'center', white, [],[],[],1.5,[],...
+                        [linexy(1,2*i)-20, linexy(2,2*i-1), linexy(1,2*i)+15, linexy(2,2*i-1)+80]);
+                end
+                
                 post_run.dat{barsize(5,j)}.rating = rating_5d(x, j);
-                post_run.dat{barsize(5,j)}.RT = ...
-                    post_run.dat{barsize(5,j)}.time(end) - ...
+                post_run.dat{barsize(5,j)}.RT = post_run.dat{barsize(5,j)}.time(end) - ...
                     post_run.dat{barsize(5,j)}.time(1);
                 
                 %                         a_display_survey(z, seeds_i, target_i, words','whole');
-                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
+                %Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
+                %Screen('DrawLines', theWindow, [x, x; y+10 y-10], 6, orange);
+                Screen('DrawLines', theWindow, [x, x; y+10 y-10], 6, red);
+                
                 Screen('Flip', theWindow);
                 
                 WaitSecs(.3);
@@ -940,331 +849,22 @@ for j=1:numel(barsize(5,:))
             end
         end
     end
+end
+
+post_run.response_endtime = GetSecs;
+Screen(theWindow, 'FillRect', bgcolor, window_rect);
+if story_num ==1
+    Screen('TextSize', theWindow, fontsize(2));
+    start_msg = double('곧 다음 이야기를 시작하겠습니다. \n\n 글의 내용에 최대한 몰입해주세요. ') ;
+    DrawFormattedText(theWindow, start_msg, 'center', 'center', white,  [], [], [], 1.5);
+end
+
+post_run.end_time = GetSecs;
+data.postrunQ{story_num} = post_run;
     
-    %             % save 5 questions data every trial (one word pair)
-    %             save(survey.surveyfile, 'survey', '-append');
 end
 
-% old!
-% for i = 1:(numel(title(1,:))-1)
-%     if mod(z(i),2) % odd number, valence, time, safe&threat
-%         question_start = GetSecs;
-%         SetMouse(W/2, H/2);
-%
-%         while(1)
-%             % Track Mouse coordinate
-%             [mx, ~, button] = GetMouse(theWindow);
-%
-%             x = mx;
-%             y = H/2;
-%             if x < W/4, x = W/4;
-%             elseif x > W*3/4, x = W*3/4;
-%             end
-%             Screen('TextSize', theWindow, fontsize(2));
-%             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%             Screen('DrawLines',theWindow, linexy1, 3, 255);
-%             DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-%             Screen('TextSize', theWindow, fontsize(1));
-%             DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-%             DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-%             DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-%
-%             Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
-%             Screen('Flip', theWindow);
-%
-%             if GetSecs - question_start >= rT_post
-%                 button(1) = true;
-%             end
-%
-%             if button(1)
-%                 post_run.rating{1,z(i)} = question_type{z(i)};
-%                 post_run.rating{2,z(i)} = (x-W/2)/(W/4);
-%                 post_run.rating{3,z(i)} = GetSecs-question_start;
-%                 rrtt = GetSecs;
-%
-%                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%                 Screen('TextSize', theWindow, fontsize(2));
-%                 Screen('DrawLines',theWindow, linexy1, 3, 255);
-%                 DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-%                 Screen('TextSize', theWindow, fontsize(1));
-%                 DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-%                 DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-%                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-%
-%                 Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-%                 Screen('Flip', theWindow);
-%                 waitsec_fromstarttime(rrtt, 0.5);
-%                 post_run.rating{4,z(i)} = GetSecs;
-%                 waitsec_fromstarttime(question_start, rT_post);
-%                 break;
-%             end
-%         end
-%
-%     else   % even number, self-relevance, vividness
-%         question_start = GetSecs;
-%         SetMouse(W*3/8, H/2);
-%
-%         while(1)
-%             % Track Mouse coordinate
-%             [mx, ~, button] = GetMouse(theWindow);
-%
-%             x = mx;
-%             y = H/2;
-%             if x < W*3/8, x = W*3/8;
-%             elseif x > W*5/8, x = W*5/8;
-%             end
-%             Screen('TextSize', theWindow, fontsize(2));
-%             Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%             Screen('DrawLines',theWindow, linexy2, 3, 255);
-%             DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-%             Screen('TextSize', theWindow, fontsize(1));
-%             DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-%             DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-%             DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                 [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-%
-%             Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
-%             Screen('Flip', theWindow);
-%
-%             if GetSecs - question_start >= rT_post
-%                 button(1) = true;
-%             end
-%
-%             if button(1)
-%                 post_run.rating{1,z(i)} = question_type{z(i)};
-%                 post_run.rating{2,z(i)} = (x-W*3/8)/(W/4);
-%                 post_run.rating{3,z(i)} = GetSecs-question_start;
-%                 rrtt = GetSecs;
-%                 Screen('TextSize', theWindow, fontsize(2));
-%                 Screen(theWindow, 'FillRect', bgcolor, window_rect);
-%                 Screen('DrawLines',theWindow, linexy2, 3, 255);
-%                 DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-%                 Screen('TextSize', theWindow, fontsize(1));
-%                 DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-%                 DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-%                 DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-%                     [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-%
-%                 Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
-%                 Screen('Flip', theWindow);
-%                 if USE_EYELINK
-%                     Eyelink('Message','Rest Question response');
-%                 end
-%                 waitsec_fromstarttime(rrtt, 0.5);
-%                 post_run.rating{4,z(i)} = GetSecs;
-%                 waitsec_fromstarttime(question_start, rT_post);
-%                 break;
-%             end
-%         end
-%     end
-% end
-
-
-waitsec_fromstarttime(post_run.start_time, 25)
-WaitSecs(.1);
-
-post_run.end_time = GetSecs;
-
-data.postrunQ{story_num} = post_run ;
-
-save(data.datafile, 'data', '-append');
-
-end
-
-function data = pico_post_run_survey_old(data, story_num)
-
-global theWindow W H; % window property
-global white red orange bgcolor tb ; % color
-global window_rect USE_EYELINK
-global fontsize
-
-tb = H/5;
-rT_post = 5;
-
-lb=W*8/128;     %110        when W=1280
-tb=H*18/80;     %180
-
-recsize=[W*450/1280 H*175/800];
-barsizeO=[W*340/1280, W*180/1280, W*340/1280, W*180/1280, W*340/1280, 0;
-    10, 10, 10, 10, 10, 0; 10, 0, 10, 0, 10, 0;
-    10, 10, 10, 10, 10, 0; 1, 2, 3, 4, 5, 0];
-rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
-    lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표
-
-% trajectory = [];
-% trajectory_time = [];
-%
-% j = 0;
-
-post_run.start_time = GetSecs;
-
-question_type = {'Valence','Self','Time','Vividness','Safe&Threat'};
-
-save(data.datafile, 'data', '-append');
-
-QUESTION
-title={'방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 일으킨 감정은 무엇인가요?',...
-    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 나와 관련이 있는 정도는 어느 정도인가요?',...
-    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 가장 관련이 있는 자신의 시간은 언제인가요?', ...
-    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 어떤 상황이나 장면을 생생하게 떠올리게 했나요?',...
-    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 안전 또는 위협을 의미하거나 느끼게 했나요?',...
-    '방금 자유 생각 과제를 하는 동안 자연스럽게 떠올린 생각에 대한 질문입니다.\n\n그 생각이 방금 연상한 단어와 관련된 생각이었나요?';
-    '부정', '전혀 나와\n관련이 없음', '과거', '전혀 생생하지 않음', '위협', '전혀 관련 없음';
-    '보통', '보통', '현재', '보통', '보통', '보통';
-    '긍정','나와 관련이\n매우 많음', '미래','매우 생생함','안전','매우 관련 있음'};
-
-
-linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
-    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
-linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
-    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
-
-rng('shuffle');
-z = randperm(5);
-
-for i = 1:(numel(title(1,:))-1)
-    if mod(z(i),2) % odd number, valence, time, safe&threat
-        question_start = GetSecs;
-        SetMouse(W/2, H/2);
-        
-        while(1)
-            % Track Mouse coordinate
-            [mx, ~, button] = GetMouse(theWindow);
-            
-            x = mx;
-            y = H/2;
-            if x < W/4, x = W/4;
-            elseif x > W*3/4, x = W*3/4;
-            end
-            Screen('TextSize', theWindow, fontsize(2));
-            Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            Screen('DrawLines',theWindow, linexy1, 3, 255);
-            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-            Screen('TextSize', theWindow, fontsize(1));
-            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-            
-            Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
-            Screen('Flip', theWindow);
-            
-            if GetSecs - question_start >= rT_post
-                button(1) = true;
-            end
-            
-            if button(1)
-                post_run.rating{1,z(i)} = question_type{z(i)};
-                post_run.rating{2,z(i)} = (x-W/2)/(W/4);
-                post_run.rating{3,z(i)} = GetSecs-question_start;
-                rrtt = GetSecs;
-                
-                Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                Screen('TextSize', theWindow, fontsize(2));
-                Screen('DrawLines',theWindow, linexy1, 3, 255);
-                DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                Screen('TextSize', theWindow, fontsize(1));
-                DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy1(1,1)-15, linexy1(2,1)+20, linexy1(1,1)+20, linexy1(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [W/2-15, linexy1(2,1)+20, W/2+20, linexy1(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
-                
-                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-                Screen('Flip', theWindow);
-                waitsec_fromstarttime(rrtt, 0.5);
-                post_run.rating{4,z(i)} = GetSecs;
-                waitsec_fromstarttime(question_start, rT_post);
-                break;
-            end
-        end
-        
-    else   % even number, self-relevance, vividness
-        question_start = GetSecs;
-        SetMouse(W*3/8, H/2);
-        
-        while(1)
-            % Track Mouse coordinate
-            [mx, ~, button] = GetMouse(theWindow);
-            
-            x = mx;
-            y = H/2;
-            if x < W*3/8, x = W*3/8;
-            elseif x > W*5/8, x = W*5/8;
-            end
-            Screen('TextSize', theWindow, fontsize(2));
-            Screen(theWindow, 'FillRect', bgcolor, window_rect);
-            Screen('DrawLines',theWindow, linexy2, 3, 255);
-            DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-            Screen('TextSize', theWindow, fontsize(1));
-            DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-            DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-            DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-           
-            if GetSecs - question_start >= rT_post
-                button(1) = true;
-            end
-            
-            if button(1)
-                post_run.rating{1,z(i)} = question_type{z(i)};
-                post_run.rating{2,z(i)} = (x-W*3/8)/(W/4);
-                post_run.rating{3,z(i)} = GetSecs-question_start;
-                rrtt = GetSecs;
-                Screen('TextSize', theWindow, fontsize(2));
-                Screen(theWindow, 'FillRect', bgcolor, window_rect);
-                Screen('DrawLines',theWindow, linexy2, 3, 255);
-                DrawFormattedText(theWindow, double(title{1,z(i)}), 'center', tb, white, [], [], [], 1.5);
-                Screen('TextSize', theWindow, fontsize(1));
-                DrawFormattedText(theWindow, double(title{2,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy2(1,1)-15, linexy2(2,1)+20, linexy2(1,1)+20, linexy2(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{3,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [W/2-15, linexy2(2,1)+20, W/2+20, linexy2(2,1)+80]);
-                DrawFormattedText(theWindow, double(title{4,z(i)}),'center', 'center', white, [],[],[],[],[],...
-                    [linexy2(1,2)-15, linexy2(2,1)+20, linexy2(1,2)+20, linexy2(2,1)+80]);
-                
-                Screen('DrawDots', theWindow, [x;y], 9, red, [0 0], 1);
-                Screen('Flip', theWindow);
-                if USE_EYELINK
-                    Eyelink('Message','Rest Question response');
-                end
-                waitsec_fromstarttime(rrtt, 0.5);
-                post_run.rating{4,z(i)} = GetSecs;
-                waitsec_fromstarttime(question_start, rT_post);
-                break;
-            end
-        end
-    end
-end
-
-
-
-WaitSecs(.1);
-
-post_run.end_time = GetSecs;
-
-data.postrunQ{story_num} = post_run ;
-
-save(data.datafile, 'data', '-append');
-
-end
-
-function data = pico_int_valence(data, story_num)
+function data = pico_int_valence(data, story_num, val_num)
 
 global theWindow W H; % window property
 global white red orange blue bgcolor tb ; % color
@@ -1274,8 +874,6 @@ global fontsize IVqT
 tb = H/4;
 IVqT = 5;
 
-save(data.datafile, 'data', '-append');
-
 int_valence.start_time = GetSecs;
 % QUESTION
 title={'감정을 보고해주세요.'
@@ -1283,10 +881,12 @@ title={'감정을 보고해주세요.'
     '보통' ;
     '긍정'};
 
-linexy1 = [W/4 W*3/4 W/4 W/4 W/2 W/2 W*3/4 W*3/4;
+linexy1 = [W/3 W*2/3 W/3 W/3 W/2 W/2 W*2/3 W*2/3;
     H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
-linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
-    H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
+% linexy1 = [540 1380 540 540 960 960 1380 1380;
+%     H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7 H/2-7 H/2+7];
+% linexy2 = [W*3/8 W*5/8 W*3/8 W*3/8 W*5/8 W*5/8;
+%     H/2 H/2 H/2-7 H/2+7 H/2-7 H/2+7];
 
 question_start = GetSecs;
 SetMouse(W/2, H/2);
@@ -1295,10 +895,10 @@ while(1)
     % Track Mouse coordinate
     [mx, ~, button] = GetMouse(theWindow);
     
-    x = mx;
+    x = (mx-W/2).*1.3+W/2;
     y = H/2;
-    if x < W/4, x = W/4;
-    elseif x > W*3/4, x = W*3/4;
+    if x < W/3, x = W/3;
+    elseif x > W*2/3, x = W*2/3;
     end
     Screen('TextSize', theWindow, fontsize(2));
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -1322,7 +922,7 @@ while(1)
     
     if button(1)
         int_valence.rating{1} = 'during_story_valence';
-        int_valence.rating{2} = (x-W/2)/(W/4);
+        int_valence.rating{2} = (x-W/2)/(W/3);
         int_valence.rating{3} = GetSecs-question_start;
         rrtt = GetSecs;
         
@@ -1338,118 +938,19 @@ while(1)
         DrawFormattedText(theWindow, double(title{4}),'center', 'center', white, [],[],[],[],[],...
             [linexy1(1,2)-15, linexy1(2,1)+20, linexy1(1,2)+20, linexy1(2,1)+80]);
         
-       % Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-         Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6)
-         Screen('Flip', theWindow);
-        waitsec_fromstarttime(rrtt, 1);
+        % Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
+        Screen('DrawLine', theWindow, red, x, y+10, x, y-10, 6)
+        Screen('Flip', theWindow);
+        waitsec_fromstarttime(rrtt, 0.5);
         Screen(theWindow, 'FillRect', bgcolor, window_rect)
         Screen('Flip', theWindow);
         int_valence.rating{4} = GetSecs;
-        waitsec_fromstarttime(question_start, IVqT+2);
         break;
     end
 end
 
- Screen(theWindow, 'FillRect', orange, window_rect)
- Screen('Flip', theWindow);
-
-
-WaitSecs(.1);
-
 int_valence.end_time = GetSecs;
-
-data.int_valence{story_num} = int_valence ;
-
-save(data.datafile, 'data', '-append');
+data.taskdat{story_num}{val_num}.int_valence = int_valence;
 
 end
-
-
-function survey = story_survey(words, varargin)
-
-global theWindow W H; % window property
-global white red orange blue bgcolor tb ; % color
-global window_rect text_color USE_EYELINK
-global fontsize lb recsize barsize rec; % rating scale
-
-lb=W*8/128;     %110        when W=1280
-tb=H*18/80;     %180
-
-recsize=[W*450/1280 H*175/800];
-barsizeO=[W*340/1280, W*180/1280, W*340/1280, W*180/1280, W*340/1280, 0;
-    10, 10, 10, 10, 10, 0; 10, 0, 10, 0, 10, 0;
-    10, 10, 10, 10, 10, 0; 1, 2, 3, 4, 5, 0];
-rec=[lb,tb; lb+recsize(1),tb; lb,tb+recsize(2); lb+recsize(1),tb+recsize(2);
-    lb,tb+2*recsize(2); lb+recsize(1),tb+2*recsize(2)]; %6개 사각형의 왼쪽 위 꼭짓점의 좌표
-
-survey.start_time = GetSecs;
-
-z= randperm(6);
-barsize = barsizeO(:,z);
-
-for j=1:numel(barsize(5,:))
-    if ~barsize(5,j) == 0 % if barsize(5,j) = 0, skip the scale
-        % if Self, Vivid question, set curson on the left.
-        % the other, set curson on the center.
-        if mod(barsize(5,j),2) == 0
-            SetMouse(rec(j,1)+(recsize(1)-barsize(1,j))/2, rec(j,2)+recsize(2)/2);
-        else
-            SetMouse(rec(j,1)+recsize(1)/2, rec(j,2)+recsize(2)/2);
-        end
-        
-        rec_i = 0;
-        survey.dat{target_i, seeds_i}{barsize(5,j)}.trajectory = [];
-        survey.dat{target_i, seeds_i}{barsize(5,j)}.time = [];
-        
-        starttime = GetSecs; % Each question start time
-        
-        while(1)
-            % Track Mouse coordinate
-            [mx, my, button] = GetMouse(theWindow);
-            
-            x = mx;  % x of a color dot
-            y = rec(j,2)+recsize(2)/2;
-            if x < rec(j,1)+(recsize(1)-barsize(1,j))/2, x = rec(j,1)+(recsize(1)-barsize(1,j))/2;
-            elseif x > rec(j,1)+(recsize(1)+barsize(1,j))/2, x = rec(j,1)+(recsize(1)+barsize(1,j))/2;
-            end
-            
-            % display scales and cursor
-            disp_inst = double('방금 자유 생각 시간에 하신 생각에 대해 답변해주세요.');
-            a_display_survey(z, seeds_i, target_i, disp_inst,'whole');
-            % Screen('DrawDots', theWindow, [x;y], 9, orange, [0 0], 1);
-            Screen('DrawLine', theWindow, orange, x, y+5, x, y-5, 6);
-            Screen('Flip', theWindow);
-            
-            % Get trajectory
-            rec_i = rec_i+1; % the number of recordings
-            survey.dat{target_i, seeds_i}{barsize(5,j)}.trajectory(rec_i,1) = rating_5d(x, j);
-            survey.dat{target_i, seeds_i}{barsize(5,j)}.time(rec_i,1) = GetSecs - starttime;
-            
-            if button(1)
-                survey.dat{target_i, seeds_i}{barsize(5,j)}.rating = rating(x, j);
-                survey.dat{target_i, seeds_i}{barsize(5,j)}.RT = ...
-                    survey.dat{target_i, seeds_i}{barsize(5,j)}.time(end) - ...
-                    survey.dat{target_i, seeds_i}{barsize(5,j)}.time(1);
-                
-                a_display_survey(z, seeds_i, target_i, words,'whole');
-                Screen('DrawDots', theWindow, [x,y], 9, red, [0 0], 1);
-                Screen('Flip', theWindow);
-                
-                WaitSecs(.3);
-                break;
-            end
-        end
-    end
-    
-    % save 5 questions data every trial (one word pair)
-    data.post_survey{story_num} = survey ;
-    save(data.datafile, 'data', '-append');
-end
-
-WaitSecs(.3);
-
-data.post_survey{story_num} = survey ;
-save(data.datafile, 'data', '-append');
-end
-
 

@@ -83,7 +83,11 @@ for story_i = 1:10
         fprintf('\n*************************\n text file: %s', stories{story_i});
         fprintf('\n total time: %.2f seconds', cal_duration);
         fprintf('\n total words: %.f words \n*************************\n', my_length);
-        plot(story_i, cal_duration, 'o')
+        if rand_order(story_i) == 1 || rand_order(story_i) == 2 || rand_order(story_i) == 3 || rand_order(story_i) == 4
+            plot(story_i, cal_duration, 'ro')
+        else
+            plot(story_i, cal_duration, 'bo')
+        end
         hold on;
 %     %else
 %         out{story_i} = common_out{rand_order(story_i)};

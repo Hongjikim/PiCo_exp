@@ -35,7 +35,7 @@ ending_loc = find(doubleText==46);
 space_loc = [0 space_loc];
 my_length = length(space_loc)-1;
 
-time_interval = rand(1,my_length)*.7; % *0.1
+% time_interval = rand(1,my_length)*.7; % *0.1
 
 cal_duration = 0;  % 63, 93, 139
 

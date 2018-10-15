@@ -1,4 +1,4 @@
-function pico_fmri_resting(varargin)
+function Copy_of_pico_fmri_resting(varargin)
 
 
 %% DEFAULT
@@ -127,7 +127,7 @@ try
     %% SETUP: Eyelink
     % need to be revised when the eyelink is here.
     if USE_EYELINK
-        edf_filename = ['E' sid(5:7), '_F' sprintf('%.1d', ft_num)]; % name should be equal or less than 8
+        edf_filename = ['E_F' sid(5:end), '_' sprintf('%.1d', ft_num)]; % name should be equal or less than 8
         % E_F for Free_thinking
         edfFile = sprintf('%s.EDF', edf_filename);
         eyelink_main(edfFile, 'Init');
@@ -313,8 +313,8 @@ try
     waitsec_fromstarttime(data.runscan_starttime, 12);
     
     data.freethinking_start_time{ft_num} = GetSecs;
-    data = free_thinking(data, ft_num); %free thinking without story!
-    save(data.datafile, 'data', '-append');
+   % data = free_thinking(data, ft_num); %free thinking without story!
+  %  save(data.datafile, 'data', '-append');
     data.freethinking_end_time = GetSecs;
     
     while GetSecs - data.freethinking_end_time < 3
@@ -324,7 +324,7 @@ try
     end
     
     data = pico_post_run_survey_resting(data, ft_num); %free thinking for story!
-    save(data.datafile, 'data', '-append');
+   % save(data.datafile, 'data', '-append');
     
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     run_END_msg = '잘하셨습니다. 잠시 대기해 주세요.';
@@ -332,7 +332,7 @@ try
     DrawFormattedText(theWindow, double(run_END_msg), 'center', textH, white);
     Screen('Flip', theWindow);
     
-    save(data.datafile, 'data', '-append');
+   % save(data.datafile, 'data', '-append');
     WaitSecs(.5);
     
     if USE_EYELINK
@@ -342,7 +342,7 @@ try
     if USE_BIOPAC
         data.biopac_endtime = GetSecs; % biopac timestamp
         BIOPAC_trigger(ljHandle, biopac_channel, 'on');
-        if ft_num == 1
+        if run_n == 1
             ending_trigger = 0.1;
         else
             ending_trigger = 0.7;
@@ -400,32 +400,35 @@ data.FTfunction{ft_num}.fixation_start_time = resting_sTime;
 rng('shuffle')
 
 % % % edit
-% sampling_time = [5] ;
-% resting_total_time = 10;
+sampling_time = [5] ;
+resting_total_time = 10;
 
-sampling_time = [60 120 180 240 300] + randi(10,1,5) - 5;
-resting_total_time = 360;
+% sampling_time = [60 120 180 240 300] + randi(10,1,5) - 5;
+% resting_total_time = 360;
 % 
 data.FTfunction{ft_num}.sampling_time = sampling_time;
 
 while GetSecs - resting_sTime < resting_total_time
-    for i = 1:5
-        k = 0;
+    for i = 1:5 % edit
         while GetSecs - resting_sTime > (sampling_time(i) - 2.5) && GetSecs - resting_sTime < (sampling_time(i) + 2.5)
-            k = k +1;
-            if k == 1
-                data.FTfunction{ft_num}.start_Sampling{i} = GetSecs;
-            end
-            data.FTfunction{ft_num}.end_Sampling{i} = GetSecs;
+            data.FTfunction{ft_num}.start_Sampling{i} = GetSecs;
             Screen('TextSize', theWindow, fontsize(3));
             FT_msg = double('지금 무슨 생각을 하고 있는지 \n단어나 구로 말해주세요.') ;
             DrawFormattedText(theWindow, FT_msg, 'center', 'center', text_color, [], [], [], 1.5);
             Screen('Flip', theWindow);
         end
+        data.FTfunction{ft_num}.end_Sampling{i} = GetSecs;
+        fixation_point = double('+') ;
         Screen('TextSize', theWindow, fontsize(3));
         DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
         Screen('Flip', theWindow);
     end
+    %     else
+    %         fixation_point = double('+') ;
+    %         DrawFormattedText(theWindow, fixation_point, 'center', 'center', text_color);
+    %         Screen('Flip', theWindow);
+    %     end
+    
 end
 
 data.FTfunction{ft_num}.fixation_end_time = GetSecs;
@@ -473,7 +476,7 @@ global window_rect USE_EYELINK
 global fontsize barsize
 
 %tb = H/5;
-rT_post = Inf;
+rT_post = 5;
 
 lb=300; %W*3/128;     %110        when W=1280
 tb=300; %H*12/80;     %180
@@ -598,9 +601,8 @@ for j=1:numel(barsize(5,:))
             rec_i = rec_i+1; % the number of recordings
             post_run.dat{barsize(5,j)}.trajectory(rec_i,1) = rating_5d(x, j);
             post_run.dat{barsize(5,j)}.time(rec_i,1) = GetSecs - starttime;
-
+            
             if GetSecs - starttime >= rT_post
-                post_run.dat{barsize(5,j)}.button_press = false;
                 button(1) = true;
             end
             
