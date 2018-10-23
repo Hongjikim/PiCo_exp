@@ -13,7 +13,7 @@ function [ts] = pico_test_generate_ts_indi(varargin)
 %%
 clf;
 
-datdir = '/Users/hongji/Dropbox/PiCo_git/data';  % edit 'data'
+datdir = '/Users/hongji/Dropbox/PiCo_fmri_task_data/data';  % edit 'data'
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');
 

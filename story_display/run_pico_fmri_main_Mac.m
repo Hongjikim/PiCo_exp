@@ -6,7 +6,7 @@
 % words_data
 
 %% TEST - short
-cd('/Users/hongji/Dropbox/PiCo_git/data');
+%cd('/Users/hongji/Dropbox/PiCo_git/data');
 ts = pico_test_generate_ts_indi('test');
 
 %% TEST - long
