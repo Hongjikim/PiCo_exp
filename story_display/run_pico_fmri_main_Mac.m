@@ -31,7 +31,7 @@ pico_fmri_task_main(); %'biopac', 'eye'); % ('testmode'); % 'biopac', 'fmri',  '
 pico_wordsampling_Mac
 
     %%
-    words = pico_wholewords;
+    words = pico_wholewords_Mac;
     a_fast_fmri_survey(words);
     
 %% LAPTOP2 - Transcribe ===================================================
