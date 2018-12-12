@@ -50,8 +50,8 @@ pico_wordsampling_Mac
             save(fullfile(savedir, ['b_responsedata_sub' SID '_sess' SessID '.mat']),'response');
 
             %%             
-            N = input('¼öÁ¤ÇÒ Çà?    ','s');
-            content = input('¼öÁ¤ÇÒ ³»¿ë?    ','s');
+            N = input('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½?    ','s');
+            content = input('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½?    ','s');
             dat_file = fullfile(savedir, ['b_responsedata_sub' SID '_sess' SessID '.mat']);          
             load(dat_file);
             response{str2double(N),1} = content;            

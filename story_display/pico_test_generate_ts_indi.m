@@ -97,7 +97,7 @@ for story_i = 1:10
 end
 
 xlim([0 11])
-ylim([200 270])
+ylim([200 290])
 %ylim([0 2])
 
 
