@@ -6,7 +6,7 @@ while subj_num > 24
     subj_num = subj_num - 24;
 end
 
-fprintf('subj_num: %d', subj_num);
+fprintf('subj_num: %d5', subj_num);
 topics(subj_num,:)
 
 

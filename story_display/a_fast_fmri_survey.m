@@ -17,7 +17,7 @@ function survey = a_fast_fmri_survey(words, varargin)
 %
 %% default setting
 
-basedir =  '/Users/hongji/Dropbox/PiCo_git';
+basedir =  '/Users/hongji/Dropbox/PiCo_fmri_task_data';
 datdir = fullfile(basedir, 'data') ;
 sid = input('Subject ID? (e.g., pico001): ', 's');
 subject_dir = filenames(fullfile(datdir, [sid '*']), 'char');

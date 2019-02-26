@@ -9,7 +9,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 
-basedir = 'C:\Users\Cocoanlab_WL01\Desktop\Dropbox\fMRI_task_data'; 
+basedir = '/Users/hongji/Dropbox/PiCo_fmri_task_data'; 
 % basedir = pwd;
 datdir = fullfile(basedir, 'data'); % (, 'data');
 if ~exist(datdir, 'dir'), error('You need to run this code within the PiCo directory.'); end
