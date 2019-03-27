@@ -131,8 +131,8 @@ try
     %Screen(theWindow, 'FillRect', bgcolor, window_rect);
     [theWindow, ~] = Screen('OpenWindow', window_num, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
-%     font = 'NanumBarunGothic'; % check
-%     Screen('TextFont', theWindow, font);
+    %     font = 'NanumBarunGothic'; % check
+    %     Screen('TextFont', theWindow, font);
     Screen('TextSize', theWindow, fontsize(2));
     if ~testmode, HideCursor; end
     
@@ -284,7 +284,7 @@ try
         Screen('Flip', theWindow);
         
         save(data.datafile, 'data', '-append');
-       
+        
         if USE_BIOPAC % resting start trigger (after 250 buffer time)
             BIOPAC_trigger(ljHandle, biopac_channel, 'on');
             waitsec_fromstarttime(GetSecs, 0.2);
@@ -316,7 +316,7 @@ try
         data = pico_post_run_survey(data, story_num); % post_run questionnaire after each FT
         
         Screen('Flip', theWindow);
-        save(data.datafile, 'data', '-append');
+        %save(data.datafile, 'data', '-append');
         waitsec_fromstarttime(data.postrunQ{story_num}.response_endtime, 2)
         
         Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -328,6 +328,7 @@ try
             waitsec_fromstarttime(GetSecs, 3)
         end
     end
+    save(data.datafile, 'data', '-append');
     %% RUN END MESSAGE
     
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
@@ -371,11 +372,11 @@ try
         data.taskdat{story_num}{5}.concent_starttime = GetSecs;  % rating start timestamp
         [data.taskdat{story_num}{5}.familiarity, data.taskdat{story_num}{5}.familiarity_time, ...
             data.taskdat{story_num}{5}.familiarity_trajectory] = familiar_rating(data.taskdat{story_num}{5}.concent_starttime, story_titles, story_num); % sub-function
-       
+        
     end
-    data.run_including_5d_and_storyQ_endtime = GetSecs; 
-     save(data.datafile, 'data', '-append');
-     
+    data.run_including_5d_and_storyQ_endtime = GetSecs;
+    save(data.datafile, 'data', '-append');
+    
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize(2));
     run_end_msg = '이번 이야기 세션이 모두 끝났습니다. \n 잠시 대기해주세요.';
@@ -789,7 +790,7 @@ for j=1:numel(barsize(5,:))
             else
                 cent_x = rec(j,1)+recsize(1)/2 ;
             end
-        
+            
             x = (mx - cent_x).*1.3 + cent_x ;  % x of a color dot
             y = rec(j,2)+recsize(2)/2;
             if x < rec(j,1)+(recsize(1)-barsize(1,j))/2, x = rec(j,1)+(recsize(1)-barsize(1,j))/2;
@@ -861,7 +862,7 @@ end
 
 post_run.end_time = GetSecs;
 data.postrunQ{story_num} = post_run;
-    
+
 end
 
 function data = pico_int_valence(data, story_num, val_num)
